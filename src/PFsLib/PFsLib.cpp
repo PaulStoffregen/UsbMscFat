@@ -26,7 +26,7 @@ void inline DBGPrintf(...) {};
 //uint8_t partVols_drive_index[10];
 
 //=============================================================================
-bool PFsLib::deletePartition(BlockDeviceInterface *blockDev, uint8_t part, print_t* pr, Stream &Serialx) 
+bool PFsLib::deletePartition(FsBlockDeviceInterface *blockDev, uint8_t part, print_t* pr, Stream &Serialx) 
 {
   uint8_t  sectorBuffer[512];
   
@@ -79,7 +79,7 @@ bool PFsLib::deletePartition(BlockDeviceInterface *blockDev, uint8_t part, print
 //----------------------------------------------------------------
 // Function to handle one MS Drive...
 //msc[drive_index].usbDrive()
-void PFsLib::InitializeDrive(BlockDeviceInterface *dev, uint8_t fat_type, print_t* pr)
+void PFsLib::InitializeDrive(FsBlockDeviceInterface *dev, uint8_t fat_type, print_t* pr)
 {
   uint8_t  sectorBuffer[512];
 
@@ -262,7 +262,7 @@ void PFsLib::print_partion_info(PFsVolume &partVol, Stream &Serialx)
 } 
 
 
-uint32_t PFsLib::mbrDmp(BlockDeviceInterface *blockDev, uint32_t device_sector_count, Stream &Serialx) {
+uint32_t PFsLib::mbrDmp(FsBlockDeviceInterface *blockDev, uint32_t device_sector_count, Stream &Serialx) {
   MbrSector_t mbr;
   uint32_t next_free_sector = 8192;  // Some inital value this is default for Win32 on SD...
   // bool valid = true;

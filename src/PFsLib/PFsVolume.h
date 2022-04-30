@@ -53,13 +53,13 @@ class PFsVolume {
    * \return true for success or false for failure.
    */
   bool begin(USBMSCDevice* dev, bool setCwv = true, uint8_t part = 1);
-  bool begin(BlockDevice* dev, bool setCwv = true, uint8_t part = 1);
+  bool begin(FsBlockDevice* dev, bool setCwv = true, uint8_t part = 1);
 
   FatVolume*  getFatVol() {return m_fVol;}
   ExFatVolume* getExFatVol() { return m_xVol; }
 
   uint8_t part() {return m_part;}
-  BlockDevice* blockDevice() {return m_blockDev;}
+  FsBlockDevice* blockDevice() {return m_blockDev;}
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
   // Use sectorsPerCluster(). blocksPerCluster() will be removed in the future.
@@ -148,7 +148,7 @@ class PFsVolume {
   bool setUpdateFSInfoSectorFreeClusterCount(uint32_t free_count = (uint32_t)-1);
 
   /**
-   * Check for BlockDevice busy.
+   * Check for FsBlockDevice busy.
    *
    * \return true if busy else false.
    */
@@ -430,7 +430,7 @@ class PFsVolume {
   static PFsVolume* m_cwv;
   FatVolume*   m_fVol = nullptr;
   ExFatVolume* m_xVol = nullptr;
-  BlockDevice* m_blockDev;
+  FsBlockDevice* m_blockDev;
   USBMSCDevice* m_usmsci = nullptr;
   uint8_t m_part;
 

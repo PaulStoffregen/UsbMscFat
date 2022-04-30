@@ -36,16 +36,16 @@
 class PFsLib : public PFsFatFormatter, public PFsExFatFormatter
 {
  public:
-	bool deletePartition(BlockDeviceInterface *blockDev, uint8_t part, print_t* pr, Stream &Serialx); 
-	void InitializeDrive(BlockDeviceInterface *dev, uint8_t fat_type, print_t* pr);
+	bool deletePartition(FsBlockDeviceInterface *blockDev, uint8_t part, print_t* pr, Stream &Serialx); 
+	void InitializeDrive(FsBlockDeviceInterface *dev, uint8_t fat_type, print_t* pr);
 	bool formatter(PFsVolume &partVol, uint8_t fat_type=0, bool dump_drive=false, bool g_exfat_dump_changed_sectors=false, Stream &Serialx=Serial);
 	void dump_hexbytes(const void *ptr, int len);
 	void print_partion_info(PFsVolume &partVol, Stream &Serialx);
-	uint32_t mbrDmp(BlockDeviceInterface *blockDev, uint32_t device_sector_count, Stream &Serialx);
+	uint32_t mbrDmp(FsBlockDeviceInterface *blockDev, uint32_t device_sector_count, Stream &Serialx);
 	void compare_dump_hexbytes(const void *ptr, const uint8_t *compare_buf, int len);
 
  private:
-	BlockDevice* m_dev;
+	FsBlockDevice* m_dev;
 	print_t*m_pr;
 
 };

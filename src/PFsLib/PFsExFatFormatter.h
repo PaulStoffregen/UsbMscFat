@@ -46,7 +46,7 @@ class PFsExFatFormatter {
    * \return true for success or false for failure.
    */
   bool format(PFsVolume &partVol, uint8_t* secBuf, print_t* pr);
-  bool createExFatPartition(BlockDevice* dev, uint32_t startSector, uint32_t sectorCount, uint8_t* secBuf, print_t* pr);
+  bool createExFatPartition(FsBlockDevice* dev, uint32_t startSector, uint32_t sectorCount, uint8_t* secBuf, print_t* pr);
   uint8_t addExFatPartitionToMbr();
   void dump_hexbytes(const void *ptr, int len);
 
@@ -61,7 +61,7 @@ class PFsExFatFormatter {
   uint32_t m_upcaseSector;
   uint32_t m_upcaseChecksum;
   uint32_t m_upcaseSize;
-  BlockDevice* m_dev;
+  FsBlockDevice* m_dev;
   print_t* m_pr;
   uint8_t* m_secBuf;
   uint32_t bitmapSize;

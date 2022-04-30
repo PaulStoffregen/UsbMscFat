@@ -143,7 +143,7 @@ bool PFsFatFormatter::format(PFsVolume &partVol, uint8_t fat_type, uint8_t* secB
 
 
 //-----------------------------------------------------------------------------
-bool PFsFatFormatter::createFatPartition(BlockDevice* dev, uint8_t fat_type, uint32_t startSector, uint32_t sectorCount, uint8_t* secBuf, print_t* pr) {
+bool PFsFatFormatter::createFatPartition(FsBlockDevice* dev, uint8_t fat_type, uint32_t startSector, uint32_t sectorCount, uint8_t* secBuf, print_t* pr) {
   bool rtn;
   
   m_dev = dev;

@@ -93,7 +93,7 @@ class UsbBase : public Vol {
     } else if (!Vol::fatType()) {
       pr->println(F("Check USB drive format."));
     }
-    SysCall::halt();
+    while (1) ; //SysCall::halt();
   }
   //----------------------------------------------------------------------------
   /** %Print error info and halt.
@@ -124,7 +124,7 @@ class UsbBase : public Vol {
    */
   void initErrorHalt(print_t* pr) {
     initErrorPrint(pr);
-    SysCall::halt();
+    while (1) ; // SysCall::halt();
   }
   //----------------------------------------------------------------------------
   /** %Print error info and halt.

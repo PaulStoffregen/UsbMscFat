@@ -45,7 +45,7 @@ class PFsFatFormatter {
    * \return true for success or false for failure.
    */
   bool format(PFsVolume &partVol, uint8_t fat_type, uint8_t* secBuf, print_t* pr);
-  bool createFatPartition(BlockDevice* dev, uint8_t fat_type, uint32_t startSector, uint32_t sectorCount, uint8_t* secBuf, print_t* pr);
+  bool createFatPartition(FsBlockDevice* dev, uint8_t fat_type, uint32_t startSector, uint32_t sectorCount, uint8_t* secBuf, print_t* pr);
   void dump_hexbytes(const void *ptr, int len);
 
  private:
@@ -64,7 +64,7 @@ class PFsFatFormatter {
   uint32_t m_relativeSectors;
   uint32_t m_sectorCount;
   uint32_t m_totalSectors;
-  BlockDevice* m_dev;
+  FsBlockDevice* m_dev;
   print_t*m_pr;
   uint8_t* m_secBuf;
   uint16_t m_reservedSectorCount;

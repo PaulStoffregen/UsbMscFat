@@ -32,7 +32,7 @@
  * \class USBmscInterface
  * \brief Abstract interface for a USB Mass Storage Device.
  */
-class USBmscInterface : public BlockDeviceInterface {
+class USBmscInterface : public FsBlockDeviceInterface {
  public:
   /** \return error code. */
   virtual uint8_t errorCode() const = 0;
