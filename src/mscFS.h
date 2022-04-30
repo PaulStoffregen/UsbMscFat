@@ -34,12 +34,7 @@
 #endif
 #include <FS.h>
 
-#if defined(__arm__)
-  // Support everything on 32 bit boards with enough memory
-  #define MSCFAT_FILE PFsFile
-  #define MSCFAT_BASE UsbFs
-  #define MSC_MAX_FILENAME_LEN 256
-#endif
+#define MSC_MAX_FILENAME_LEN 256
 
 class MSCFile : public FileImpl
 {
@@ -49,7 +44,7 @@ private:
 	// openNextFile() while traversing a directory.
 	// Only the abstract File class which references these derived
 	// classes is meant to have a public constructor!
-	MSCFile(const MSCFAT_FILE &file) : mscfatfile(file), filename(nullptr) { }
+	MSCFile(const PFsFile &file) : mscfatfile(file), filename(nullptr) { }
 	friend class MSCClass;
 public:
 	virtual ~MSCFile(void) {
@@ -118,7 +113,7 @@ public:
 		return mscfatfile.isDirectory();
 	}
 	virtual File openNextFile(uint8_t mode=0) {
-		MSCFAT_FILE file = mscfatfile.openNextFile();
+		PFsFile file = mscfatfile.openNextFile();
 		if (file) return File(new MSCFile(file));
 		return File();
 	}
@@ -144,7 +139,7 @@ public:
 #endif
 
 private:
-	MSCFAT_FILE mscfatfile;
+	PFsFile mscfatfile;
 	char *filename;
 };
 
@@ -161,7 +156,7 @@ public:
 		oflag_t flags = O_READ;
 		if (mode == FILE_WRITE) { flags = O_RDWR | O_CREAT | O_AT_END; }
 		else if (mode == FILE_WRITE_BEGIN) { flags = O_RDWR | O_CREAT; }
-		MSCFAT_FILE file = mscfs.open(filepath, flags);
+		PFsFile file = mscfs.open(filepath, flags);
 		if (file) return File(new MSCFile(file));
 			return File();
 	}
@@ -188,14 +183,12 @@ public:
 		return (uint64_t)mscfs.clusterCount() * (uint64_t)mscfs.bytesPerCluster();
 	}
 public: // allow access, so users can mix MSC & SdFat APIs
-	MSCFAT_BASE mscfs;
+	UsbFs mscfs;
 };
 
 extern MSCClass MSC;
 
 // do not expose these defines in Arduino sketches or other libraries
-#undef MSCFAT_FILE
-#undef MSCFAT_BASE
 #undef MSC_MAX_FILENAME_LEN
 
 #define SD_CARD_TYPE_USB 4
