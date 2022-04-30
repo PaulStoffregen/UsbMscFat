@@ -41,7 +41,7 @@
   #define MSC_MAX_FILENAME_LEN 256
 #endif
 
-class MSCFile : public File
+class MSCFile : public FileImpl
 {
 private:
 	// Classes derived from File are never meant to be constructed
@@ -99,7 +99,7 @@ public:
 		}
 		mscfatfile.close();
 	}
-	virtual operator bool() {
+	virtual bool isOpen() {
 		return mscfatfile.isOpen();
 	}
 	virtual const char * name() {
@@ -143,7 +143,6 @@ public:
 	}
 #endif
 
-	using Print::write;
 private:
 	MSCFAT_FILE mscfatfile;
 	char *filename;
