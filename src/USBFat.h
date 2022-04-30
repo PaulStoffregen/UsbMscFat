@@ -312,48 +312,6 @@ class UsbBase : public Vol {
 };
 //------------------------------------------------------------------------------
 /**
- * \class UsbFat32
- * \brief MSC file system class for FAT volumes.
- */
-class UsbFat32 : public UsbBase<FatVolume> {
- public:
-  /** Format a USB drive FAT32/FAT16.
-   *
-   * \param[in] pr Optional Print information.
-   * \return true for success or false for failure.
-   */
-  bool format(print_t* pr = nullptr) {
-    FatFormatter fmt;
-    uint8_t* cache = reinterpret_cast<uint8_t*>(cacheClear());
-    if (!cache) {
-      return false;
-    }
-    return fmt.format(usbDrive(), cache, pr);
-  }
-};
-//------------------------------------------------------------------------------
-/**
- * \class UsbExFat
- * \brief MSC file system class for exFAT volumes.
- */
-class UsbExFat : public UsbBase<ExFatVolume> {
- public:
-  /** Format a USB drive exFAT.
-   *
-   * \param[in] pr Optional Print information.
-   * \return true for success or false for failure.
-   */
-  bool format(print_t* pr = nullptr) {
-    ExFatFormatter fmt;
-    uint8_t* cache = reinterpret_cast<uint8_t*>(cacheClear());
-    if (!cache) {
-      return false;
-    }
-    return fmt.format(usbDrive(), cache, pr);
-  }
-};
-//------------------------------------------------------------------------------
-/**
  * \class USBFs
  * \brief SD file system class for FAT16, FAT32, and exFAT volumes.
  */
@@ -381,33 +339,8 @@ class UsbFs : public UsbBase<PFsVolume> {
   }
 };
 //------------------------------------------------------------------------------
-#if SDFAT_FILE_TYPE == 1
-///** Select type for SdFat. */
-typedef UsbFat32 UsbFat;
-/** Select type for File. */
-#if !defined(__has_include) || !__has_include(<FS.h>)
-typedef File32 File;
-#endif
-/** Select type for SdBaseFile. */
-typedef FatFile UsbBaseFile;
-#elif SDFAT_FILE_TYPE == 2
-typedef UsbExFat UsbFat;
-#if !defined(__has_include) || !__has_include(<FS.h>)
-typedef ExFile File;
-#endif
-typedef ExFatFile UsbBaseFile;
-#elif SDFAT_FILE_TYPE == 3
 typedef UsbFs UsbFat;
-#if !defined(__has_include) || !__has_include(<FS.h>)
-typedef FsFile File;
-#endif
 typedef FsBaseFile UsbBaseFile;
-#else  // SDFAT_FILE_TYPE
-#error Invalid SDFAT_FILE_TYPE
-#endif  // SDFAT_FILE_TYPE
-//------------------------------------------------------------------------------
-//typedef UsbFs UsbFat;
-//typedef FsBaseFile UsbBaseFile;
 /**
  * \class SdFile
  * \brief FAT16/FAT32 file with Print.
