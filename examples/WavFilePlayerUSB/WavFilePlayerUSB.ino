@@ -64,9 +64,9 @@ void setup() {
   while (!Serial) {
     yield();
   }
-  
-   // Start USBHost_t36, HUB(s) and USB devices.
-   myusb.begin();
+
+  // Start USBHost_t36, HUB(s) and USB devices.
+  myusb.begin();
 
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
@@ -121,6 +121,5 @@ void loop() {
   delay(500);
   playFile("SDTEST4.WAV");
   delay(1500);
-
 }
 

@@ -1,15 +1,15 @@
 /*
   MSC USB Drive datalogger
- 
+
  This example shows how to log data from three analog sensors
  to an MSC USB drive using the mscFS library.
- 
+
  created  24 Nov 2010
  modified 9 Apr 2012
  by Tom Igoe
  modified 17 Nov 2020
  by Warren Watson
- 
+
  This example code is in the public domain.
  */
 

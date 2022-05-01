@@ -1,18 +1,18 @@
 /*
   MSC USB Drive basic file example
- 
- This example shows how to create and destroy an MSC USB drive file 	
+
+ This example shows how to create and destroy an MSC USB drive file
  The circuit:
- 
+
  created   Nov 2010
  by David A. Mellis
  modified 9 Apr 2012
  by Tom Igoe
  modified 17 Nov 2020
  by Warren Watson
- 
+
  This example code is in the public domain.
- 	 
+
  */
 #include <mscFS.h>
 
@@ -34,7 +34,7 @@ File myFile;
 
 void setup()
 {
-  
+
  // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
@@ -64,23 +64,22 @@ void setup()
   myFile = MSC.open("example.txt", FILE_WRITE);
   myFile.close();
 
-  // Check to see if the file exists: 
+  // Check to see if the file exists:
   if (MSC.exists("example.txt")) {
     Serial.println("example.txt exists.");
-  }
-  else {
-    Serial.println("example.txt doesn't exist.");  
+  } else {
+    Serial.println("example.txt doesn't exist.");
   }
 
   // delete the file:
   Serial.println("Removing example.txt...");
   MSC.remove("example.txt");
 
-  if (MSC.exists("example.txt")){ 
+  if (MSC.exists("example.txt")) {
     Serial.println("example.txt exists.");
   }
   else {
-    Serial.println("example.txt doesn't exist.");  
+    Serial.println("example.txt doesn't exist.");
   }
 }
 

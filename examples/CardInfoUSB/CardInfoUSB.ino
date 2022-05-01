@@ -1,12 +1,12 @@
 /*
-  MSC USB Drive test 
-   
+ MSC USB Drive test
+
  This example shows how use the utility libraries on which the'
  SD library is based in order to get info about your USB Drive.
  Very useful for testing a card when you're not sure whether its working or not.
- 	
+
  created  28 Mar 2011
- by Limor Fried 
+ by Limor Fried
  modified 9 Apr 2012
  by Tom Igoe
  modified 17 Nov 2020
@@ -46,7 +46,7 @@ void setup()
    while (!Serial) {
     ; // wait for serial port to connect.
   }
-  
+
   // Start USBHost_t36, HUB(s) and USB devices.
   myusb.begin();
 
@@ -58,15 +58,14 @@ void setup()
     Serial.println("* is a USB drive1 connected?");
     Serial.println("* is a USB drive1 Formatted (Fat32/ExFat)?");
   } else {
-     Serial.println("USB drive1 is present.");
-  
+    Serial.println("USB drive1 is present.");
 
     // Now we will try to open the 'volume'/'partition' - it should be FAT16 or FAT32
     if (!volume1.init(msc1)) {
       Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
       return;
     }
-  
+
     // print the type of card
     Serial.print("\nCard type: ");
     switch(msc1.usbType()) {
@@ -107,7 +106,7 @@ void setup()
   }
   //Serial.println("\nFiles found on the card (name, date and size in bytes): ");
   //root2.openRoot(volume1);
-  
+
   // list all files in the card with date and size
   // root2.ls(LS_R | LS_DATE | LS_SIZE);
 
@@ -120,7 +119,7 @@ void setup()
     Serial.println("* is a USB drive2 Formatted (Fat32/ExFat)?");
   } else {
     Serial.println("USB drive2 is present.");
-   
+
     // print the type of card
     Serial.print("\nCard type: ");
     switch(msc2.usbType()) {
@@ -166,7 +165,7 @@ void setup()
   }
   //Serial.println("\nFiles found on the card (name, date and size in bytes): ");
   //root2.openRoot(volume1);
-  
+
   // list all files in the card with date and size
   // root2.ls(LS_R | LS_DATE | LS_SIZE);
 
@@ -174,5 +173,5 @@ void setup()
 
 
 void loop(void) {
-  
+
 }

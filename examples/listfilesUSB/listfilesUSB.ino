@@ -1,15 +1,15 @@
 /*
   MSC USB Drive basic directory list example
- 
+
  created   Nov 2010
  by David A. Mellis
  modified 9 Apr 2012
  by Tom Igoe
  modified 17 Nov 2020
  by Warren Watson
- 
+
  This example code is in the public domain.
- 	 
+
  */
 #include <mscFS.h>
 
@@ -29,7 +29,7 @@ msController msDrive2(myusb);
 
 void setup()
 {
-  
+
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
@@ -48,9 +48,9 @@ void setup()
   Serial.println("initialization done.");
 
   File root = MSC.open("/");
-  
+
   printDirectory(root, 0);
-  
+
   Serial.println("done!");
 }
 

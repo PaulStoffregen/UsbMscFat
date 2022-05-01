@@ -1,23 +1,23 @@
 /*
   MSC Drive read/write copy file
- 
- This example shows how to read and write data to and from an SD card file 	
+
+ This example shows how to read and write data to and from an SD card file
  The circuit:
  * SD card attached to SPI bus as follows:
  ** MOSI - pin 11, pin 7 on Teensy with audio board
  ** MISO - pin 12
  ** CLK - pin 13, pin 14 on Teensy with audio board
  ** CS - pin 4, pin 10 on Teensy with audio board
- 
+
  created   Nov 2010
  by David A. Mellis
  modified 9 Apr 2012
  by Tom Igoe
- 
+
  This example code is in the public domain.
- 	 
+
  */
- 
+
 #include <mscFS.h>
 
 // Setup USBHost_t36 and as many HUB ports as needed.
@@ -57,7 +57,7 @@ void setup()
  //UNCOMMENT THESE TWO LINES FOR TEENSY AUDIO BOARD:
  //SPI.setMOSI(7);  // Audio shield has MOSI on pin 7
  //SPI.setSCK(14);  // Audio shield has SCK on pin 14
-  
+
  // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
@@ -85,15 +85,15 @@ void setup()
     buf[BUF_SIZE-2] = (uint8_t *)'\r';
   }
   buf[BUF_SIZE-1] = (uint8_t *)'\n';
-  
+
   uint32_t n = FILE_SIZE/BUF_SIZE;
 
   if(MSC.exists("test.txt"))
-	MSC.remove("test.txt");
+    MSC.remove("test.txt");
 
-  // open the file. 
+  // open the file.
   myFile = MSC.open("test.txt", FILE_WRITE_BEGIN);
-  
+
   // if the file opened okay, write to it:
   if (myFile) {
     Serial.print("Writing to test.txt...");
@@ -119,14 +119,14 @@ void setup()
   myFile = MSC.open("test.txt");
   if (myFile) {
     Serial.println("test.txt:");
-	if(MSC.exists("copy.txt"))
-		MSC.remove("copy.txt");
-    // open the second file for writing. 
+    if(MSC.exists("copy.txt"))
+      MSC.remove("copy.txt");
+    // open the second file for writing.
     myFile1 = MSC.open("copy.txt", FILE_WRITE_BEGIN);
     // if the file opened okay, write to it:
     if (myFile1) {
       Serial.printf("Copying test.txt to copy.txt...");
-	  t = millis();
+      t = millis();
       while(myFile.read(buf, BUF_SIZE) == BUF_SIZE) {
         if (myFile1.write(buf, BUF_SIZE) != BUF_SIZE) {
           Serial.printf("Write Failed: Stoppiing Here...");
@@ -142,19 +142,19 @@ void setup()
     myFile.close();
     myFile1.close();
   } else {
-  	// if the file didn't open, print an error:
+    // if the file didn't open, print an error:
     Serial.println("error opening test.txt");
   }
   // re-open the second file for reading:
   myFile1 = MSC.open("copy.txt");
   if (myFile1) {
     Serial.println("copy.txt:");
-    // open the file for a read. 
+    // open the file for a read.
     myFile1 = MSC.open("copy.txt");
     // if the file opened okay, write to it:
     if (myFile1) {
       Serial.printf("Reading File: copy.txt...");
-	  t = millis();
+      t = millis();
       while(myFile1.read(buf, BUF_SIZE) == BUF_SIZE);
     }
     t = millis() - t;
@@ -164,7 +164,7 @@ void setup()
     // close the files:
     myFile1.close();
   } else {
-  	// if the file didn't open, print an error:
+    // if the file didn't open, print an error:
     Serial.println("Error opening copy.txt");
   }
   Serial.printf("Done..\n");
@@ -172,7 +172,7 @@ void setup()
 
 void loop()
 {
-	// nothing happens after setup
+  // nothing happens after setup
 }
 
 void printDirectory(File dir, int numSpaces) {

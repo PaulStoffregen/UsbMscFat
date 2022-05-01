@@ -63,7 +63,7 @@ void setup() {
   while (!Serial) {
     yield();
   }
-  
+
   myusb.begin();
 
   cout << F("\nUse a freshly formatted Mass Storage drive for best performance.\n");
@@ -205,7 +205,7 @@ void loop() {
     }
     s = file.fileSize();
     t = millis() - t;
-	cout << F("Filesize = ") << s << endl;
+    cout << F("Filesize = ") << s << endl;
     cout << s/t <<',' << maxLatency << ',' << minLatency;
     cout << ',' << totalLatency/n << endl;
   }

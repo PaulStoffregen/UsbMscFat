@@ -153,13 +153,9 @@ bool mbrDmp(FsBlockDeviceInterface *blockDev) {
 
 void setup()
 {
-#if 0 // easy test to check HardFault Detection response
-  int *pp = 0;
-  *pp = 5;
-#endif
-pinMode(0, OUTPUT);
-pinMode(1, OUTPUT);
-pinMode(2, OUTPUT);
+  pinMode(0, OUTPUT);
+  pinMode(1, OUTPUT);
+  pinMode(2, OUTPUT);
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -236,8 +232,7 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
   }
   for (uint8_t i = 0; i < 4; i++) {
     if(partition_valid[i]) {
-      switch (partVol[i].fatType())
-      {
+      switch (partVol[i].fatType()) {
         case FAT_TYPE_FAT12: Serial.printf("%d:>> Fat12: ", i); break;
         case FAT_TYPE_FAT16: Serial.printf("%d:>> Fat16: ", i); break;
         case FAT_TYPE_FAT32: Serial.printf("%d:>> Fat32: ", i); break;
@@ -250,16 +245,18 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
       uint32_t free_cluster_count = partVol[i].freeClusterCount();
       uint64_t used_size =  (uint64_t)(partVol[i].clusterCount() - free_cluster_count)
                             * (uint64_t)partVol[i].bytesPerCluster();
-      uint64_t total_size = (uint64_t)partVol[i].clusterCount() * (uint64_t)partVol[i].bytesPerCluster();
-      Serial.printf(" Partition Total Size:%llu Used:%llu time us: %u\n", total_size, used_size, (uint32_t)em_sizes);
+      uint64_t total_size = (uint64_t)partVol[i].clusterCount()
+                            * (uint64_t)partVol[i].bytesPerCluster();
+      Serial.printf(" Partition Total Size:%llu Used:%llu time us: %u\n",
+                     total_size, used_size, (uint32_t)em_sizes);
 
       em_sizes = 0; // lets see how long this one takes.
-      Serial.printf("    Free Clusters: API: %u  time us: %u\n", free_cluster_count, (uint32_t)em_sizes);
-
+      Serial.printf("    Free Clusters: API: %u  time us: %u\n",
+                     free_cluster_count, (uint32_t)em_sizes);
       //partVol[i].ls();
     }
   }
- } 
+}
 
 void SetVolumeLabel(FsBlockDeviceInterface *blockDev, uint8_t part, char *new_name)  {
   FsVolume partVol;
@@ -272,11 +269,14 @@ void SetVolumeLabel(FsBlockDeviceInterface *blockDev, uint8_t part, char *new_na
   char volName[20];
   if (partVol.getVolumeLabel(volName, sizeof(volName))) {
     Serial.printf("Previous Volume name:(%s)", volName);
-  } else Serial.println("Failed to retrieve previous Volume name");
-
-  if (partVol.setVolumeLabel(new_name)) Serial.println("Set new name *** succeeded ***");
-  else Serial.println("Set new name *** failed ***");
-
+  } else {
+    Serial.println("Failed to retrieve previous Volume name");
+  }
+  if (partVol.setVolumeLabel(new_name)) {
+    Serial.println("Set new name *** succeeded ***");
+  } else {
+    Serial.println("Set new name *** failed ***");
+  }
 }
 
 //================================================================
@@ -318,8 +318,7 @@ void loop(void) {
       if (!partVol.begin(sd.card(), true, i)) continue; // not a valid volume.
       partVol.chvol();
 
-      switch (partVol.fatType())
-      {
+      switch (partVol.fatType()) {
         case FAT_TYPE_FAT12: Serial.print("\n>> Fat12: "); break;
         case FAT_TYPE_FAT16: Serial.print("\n>> Fat16: "); break;
         case FAT_TYPE_FAT32: Serial.print("\n>> Fat32: "); break;
@@ -342,12 +341,12 @@ void loop(void) {
 
   Serial.println("Press any key to run again");
   Serial.println("Or enter new Volume label: <dev:12s> <Par> Name");
-  while (Serial.available() == 0); // wait for something. 
+  while (Serial.available() == 0); // wait for something.
   // Real quick and dirty!!!
   int chDrive = Serial.read();
-  Serial.read(); // Assume blank 
+  Serial.read(); // Assume blank
   int chPartition = Serial.read();
-  Serial.read(); 
+  Serial.read();
   char new_volume_name[12];
   int ii = 0;
   for (ii=0; ii < 12; ii++) {
@@ -364,12 +363,7 @@ void loop(void) {
       case '1': SetVolumeLabel(msc1.usbDrive(), part, new_volume_name); break;
       case '2': SetVolumeLabel(msc2.usbDrive(), part, new_volume_name); break;
       case 's': SetVolumeLabel(sd.card(), part, new_volume_name); break;
-
-
-
     }
-
   }
-
   while (Serial.read() != -1);
 }

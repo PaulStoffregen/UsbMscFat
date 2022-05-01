@@ -109,7 +109,7 @@ void loop() {
   uint32_t t = millis();
   if (!msc1.usbDriveBegin(&msDrive1)) {
     Serial.print("initialization failed with code: ");
-	Serial.println(msc1.mscErrorCode());
+    Serial.println(msc1.mscErrorCode());
     return;
   }
   t = millis() - t;

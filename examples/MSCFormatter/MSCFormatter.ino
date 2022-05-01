@@ -1,3 +1,6 @@
+// This example is currently broken by removal of PFsLib
+// partition functions still need to be ported to SdFat FsLib
+
 #include "Arduino.h"
 #include "mscFS.h"
 #include "sdios.h"
@@ -14,11 +17,11 @@ USBHub hub2(myusb);
 // Mutiple  USB drives can be used. Hot plugging is supported. There is a slight
 // delay after a USB MSC device is plugged in. This is waiting for initialization
 // but after it is initialized ther should be no delay.
-#define CNT_PARITIONS 10 
+#define CNT_PARITIONS 10
 FsVolume partVols[CNT_PARITIONS];
 uint8_t partVols_drive_index[CNT_PARITIONS];
 uint8_t count_partVols = 0;
-  
+
 #define CNT_MSDRIVES 3
 msController msDrives[CNT_MSDRIVES](myusb);
 UsbFs msc[CNT_MSDRIVES];
@@ -33,7 +36,7 @@ bool g_exfat_dump_changed_sectors = false;
 SdFs sd;
 SdFs sdSPI;
 #define SD_SPI_CS 10
-#define SPI_SPEED SD_SCK_MHZ(33)  // adjust to sd card 
+#define SPI_SPEED SD_SCK_MHZ(33)  // adjust to sd card
 
 FsLib pfsLIB;
 
@@ -164,9 +167,9 @@ void ShowPartitionList() {
 // Function to handle one MS Drive...
 //----------------------------------------------------------------
 
-void CreatePartition(uint8_t drive_index, uint32_t formatType, uint32_t starting_sector, uint32_t count_of_sectors) 
+void CreatePartition(uint8_t drive_index, uint32_t formatType, uint32_t starting_sector, uint32_t count_of_sectors)
 {
-    // What validation should we do here?  Could do a little like if 0 for count 
+    // What validation should we do here?  Could do a little like if 0 for count
     // find out how big the drive is...
   if (!msDrives[drive_index]) {
     Serial.println("Not a valid USB drive");
@@ -259,8 +262,8 @@ void ShowCommandList() {
   Serial.println("  d <partition> - to dump first sectors");
   Serial.println("  p <partition> - print Partition info");
   Serial.println("  l <partition> - to do ls command on that partition");
-  Serial.println("  c -  toggle on/off format show changed data");  
-  Serial.println("  *** Danger Zone ***");  
+  Serial.println("  c -  toggle on/off format show changed data");
+  Serial.println("  *** Danger Zone ***");
   Serial.println("  N <USB Device> start_addr <length> - Add a new partition to a disk");
   Serial.println("  R <USB Device> - Setup initial MBR and format disk *sledgehammer*");
   Serial.println("  X <partition> [d <usb device> - Delete a partition");
@@ -274,9 +277,9 @@ uint32_t CommandLineReadNextNumber(int &ch, uint32_t default_num) {
   uint32_t return_value = 0;
   while ((ch >= '0') && (ch <= '9')) {
     return_value = return_value * 10 + ch - '0';
-    ch = Serial.read(); 
+    ch = Serial.read();
   }
-  return return_value;  
+  return return_value;
 }
 
 
@@ -299,7 +302,7 @@ void loop() {
   for (uint8_t i = 0; i < CNT_MSDRIVES; i++) {
     if (msDrives[i]) {
       processMSDrive(i, msDrives[i], msc[i]);
-    }    
+    }
   }
   processSDDrive();
   ProcessSPISD();
@@ -318,9 +321,9 @@ void loop() {
   switch(commmand) {
     default:
       ShowCommandList();
-      break;      
+      break;
     case 'f':
-      // if there is an optional parameter try it... 
+      // if there is an optional parameter try it...
       switch(ch) {
         case '1': fat_type = FAT_TYPE_FAT16; break;
         case '3': fat_type = FAT_TYPE_FAT32; break;
@@ -328,19 +331,19 @@ void loop() {
       }
 
       Serial.printf("\n **** Start format partition %d ****\n", partVol_index);
-      if (partVol_index < count_partVols) 
-        pfsLIB.formatter(partVols[partVol_index], fat_type, false, g_exfat_dump_changed_sectors, Serial); 
+      if (partVol_index < count_partVols)
+        pfsLIB.formatter(partVols[partVol_index], fat_type, false, g_exfat_dump_changed_sectors, Serial);
       break;
 
     case 'd':
       Serial.printf("\n **** Start dump partition %d ****\n", partVol_index);
-      if (partVol_index < count_partVols) 
-        pfsLIB.formatter(partVols[partVol_index], 0, true, g_exfat_dump_changed_sectors, Serial); 
+      if (partVol_index < count_partVols)
+        pfsLIB.formatter(partVols[partVol_index], 0, true, g_exfat_dump_changed_sectors, Serial);
       break;
     case 'p':
       while (partVol_index < count_partVols) {
         Serial.printf("\n **** print partition info %d ****\n", partVol_index);
-        pfsLIB.print_partion_info(partVols[partVol_index], Serial); 
+        pfsLIB.print_partion_info(partVols[partVol_index], Serial);
         partVol_index = (uint8_t)CommandLineReadNextNumber(ch, 0xff);
       }
       break;
@@ -361,13 +364,13 @@ void loop() {
         }
       }
       break;
-    case 'c': 
-      g_exfat_dump_changed_sectors = !g_exfat_dump_changed_sectors; 
+    case 'c':
+      g_exfat_dump_changed_sectors = !g_exfat_dump_changed_sectors;
       break;
     case 'l':
 
       Serial.printf("\n **** List fillScreen partition %d ****\n", partVol_index);
-      if (partVol_index < count_partVols) 
+      if (partVol_index < count_partVols)
         partVols[partVol_index].ls();
       break;
     case 'N':
@@ -380,7 +383,7 @@ void loop() {
         CreatePartition(partVol_index, formatType, starting_sector, count_of_sectors);
       }
       break;
-  
+
     case 'R':
       Serial.printf("\n **** Try Sledgehammer on USB Drive %u ****\n", partVol_index);
       switch(ch) {
@@ -388,13 +391,13 @@ void loop() {
         case '3': fat_type = FAT_TYPE_FAT32; break;
         case 'e': fat_type = FAT_TYPE_EXFAT; break;
       }
-      InitializeBlockDevice(partVol_index, fat_type); 
+      InitializeBlockDevice(partVol_index, fat_type);
       break;
     case 'X':
       {
         if (ch == 'd') {
-          // User is using the devide version... 
-          ch = Serial.read();             
+          // User is using the devide version...
+          ch = Serial.read();
           uint8_t usb_device_index = (uint8_t)CommandLineReadNextNumber(ch, 0);
           if (usb_device_index < CNT_MSDRIVES) pfsLIB.deletePartition(msc[usb_device_index].usbDrive(), partVol_index, &Serial, Serial);
           else Serial.println("Drive index is out of range");

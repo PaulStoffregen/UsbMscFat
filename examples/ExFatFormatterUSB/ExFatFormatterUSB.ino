@@ -30,20 +30,20 @@ void setup() {
   myusb.begin();
 
   Serial.println(F("Type any character to begin"));
-  
+
   while (!Serial.available()) {
     yield();
   }
   do {
     delay(10);
   } while(Serial.read() >= 0);
-  
+
   Serial.println();
   Serial.println(F(
     "Your SD will be formated exFAT.\r\n"
     "All data on the SD will be lost.\r\n"
     "Type 'Y' to continue.\r\n"));
-    
+
   while (!Serial.available()) {
     yield();
   }
@@ -54,8 +54,8 @@ void setup() {
   if (!msc1.usbDriveBegin(&msDrive1)) {
     error("cardBegin failed");
   } else {
-	Serial.println("Formatting USB drive to ExFat. Please wait...");
-  }     
+    Serial.println("Formatting USB drive to ExFat. Please wait...");
+  }
   if(!msc1.format(&Serial)) {
     error("format failed");
   }

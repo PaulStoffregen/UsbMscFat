@@ -1,18 +1,18 @@
 /*
   MSC USB Drive file dump
- 
+
  This example shows how to read a file from the MSC USB drive using the
  mscFS library and send it over the serial port.
- 	
+
  created  22 December 2010
  by Limor Fried
  modified 9 Apr 2012
  by Tom Igoe
  modified 17 Nov 2020
  by Warren Watson
- 
+
  This example code is in the public domain.
- 	 
+
  */
 
 #include <mscFS.h>
@@ -33,7 +33,7 @@ msController msDrive2(myusb);
 
 void setup()
 {
-  
+
  // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
@@ -44,7 +44,7 @@ void setup()
   myusb.begin();
 
   Serial.print("\nInitializing USB MSC drive...");
-  
+
   // see if the drive is present and can be initialized:
   if (!MSC.begin(&msDrive1)) {
     Serial.println("initialization failed!");
@@ -52,7 +52,7 @@ void setup()
     return;
   }
   Serial.println("USB drive initialized.");
-  
+
   // open the file.
   File dataFile = MSC.open("datalog.txt");
 
@@ -62,11 +62,11 @@ void setup()
       Serial.write(dataFile.read());
     }
     dataFile.close();
-  }  
+  }
   // if the file isn't open, pop up an error:
   else {
     Serial.println("error opening datalog.txt");
-  } 
+  }
 }
 
 void loop()

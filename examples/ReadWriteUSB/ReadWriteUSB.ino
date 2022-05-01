@@ -1,8 +1,8 @@
 /*
   MSC USB Drive read/write
- 
- This example shows how to read and write data to and from an 
- MSC USB drive file 	
+
+ This example shows how to read and write data to and from an
+ MSC USB drive file
 
  created   Nov 2010
  by David A. Mellis
@@ -10,11 +10,11 @@
  by Tom Igoe
  modified 17 Nov 2020
  by Warren Watson
- 
+
  This example code is in the public domain.
- 	 
+
  */
- 
+
 #include <mscFS.h>
 
 // Setup USBHost_t36 and as many HUB ports as needed.
@@ -60,41 +60,41 @@ void setup()
     MSC.remove("test.txt");
   }
 
-  // open the file. 
+  // open the file.
   myFile = MSC.open("test.txt", FILE_WRITE);
-  
+
   // if the file opened okay, write to it:
   if (myFile) {
     Serial.print("Writing to test.txt...");
     myFile.println("testing 1, 2, 3.");
-	// close the file:
+    // close the file:
     myFile.close();
     Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening test.txt");
   }
-  
+
   // re-open the file for reading:
   myFile = MSC.open("test.txt");
   if (myFile) {
     Serial.println("test.txt:");
-    
+
     // read from the file until there's nothing else in it:
     while (myFile.available()) {
-    	Serial.write(myFile.read());
+      Serial.write(myFile.read());
     }
     // close the file:
     myFile.close();
   } else {
-  	// if the file didn't open, print an error:
+    // if the file didn't open, print an error:
     Serial.println("error opening test.txt");
   }
 }
 
 void loop()
 {
-	// nothing happens after setup
+  // nothing happens after setup
 }
 
 
