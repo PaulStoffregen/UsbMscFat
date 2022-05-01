@@ -53,7 +53,13 @@ void setup()
     return;
   }
   Serial.println("initialization done.");
-  
+
+  // delete any leftover test.txt file
+  if (MSC.exists("test.txt")) {
+    Serial.println("delete prior text.txt");
+    MSC.remove("test.txt");
+  }
+
   // open the file. 
   myFile = MSC.open("test.txt", FILE_WRITE);
   
