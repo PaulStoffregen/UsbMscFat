@@ -35,66 +35,6 @@ UsbFs msc2;
 SdFs sd;
 
 
-
-typedef struct {
-  uint32_t free;
-  uint32_t todo;
-  uint32_t clusters_per_sector;
-} _gfcc_t;
-
-
-void _getfreeclustercountCB(uint32_t token, uint8_t *buffer) 
-{
-  digitalWriteFast(1, HIGH);
-  _gfcc_t *gfcc = (_gfcc_t *)token;
-  uint16_t cnt = gfcc->clusters_per_sector;
-  if (cnt > gfcc->todo) cnt = gfcc->todo;
-  gfcc->todo -= cnt; // update count here...
-
-  if (gfcc->clusters_per_sector == 512/2) {
-    // fat16
-    uint16_t *fat16 = (uint16_t *)buffer;
-    while (cnt-- ) {
-      if (*fat16++ == 0) gfcc->free++;
-    }
-  } else {
-    uint32_t *fat32 = (uint32_t *)buffer;
-    while (cnt-- ) {
-      if (*fat32++ == 0) gfcc->free++;
-    }
-  }
-
-  digitalWriteFast(1, LOW);
-}
-
-//-------------------------------------------------------------------------------------------------
-uint32_t GetFreeClusterCount(USBmscInterface *usmsci, FsVolume &partVol)
-{
-
-  FatVolume* fatvol =  partVol.getFatVol();
-  if (!fatvol) return 0;
-
-  _gfcc_t gfcc; 
-  gfcc.free = 0;
-
-  switch (partVol.fatType()) {
-    default: return 0;
-    case FAT_TYPE_FAT16: gfcc.clusters_per_sector = 512/2; break;
-    case FAT_TYPE_FAT32: gfcc.clusters_per_sector = 512/4; break;
-  }
-  gfcc.todo = fatvol->clusterCount() + 2;
-
-  digitalWriteFast(0, HIGH);
-
-
-  if (usmsci->readSectorsWithCB(fatvol->fatStartSector(), gfcc.todo / gfcc.clusters_per_sector + 1, 
-      &_getfreeclustercountCB, (uint32_t)&gfcc) != MS_CBW_PASS) gfcc.free = (uint32_t)-1;
-  digitalWriteFast(0, LOW);
-
-  return gfcc.free;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 
 bool mbrDmpExtended(FsBlockDeviceInterface *blockDev, uint32_t sector, uint8_t indent) {
@@ -313,14 +253,8 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
       uint64_t total_size = (uint64_t)partVol[i].clusterCount() * (uint64_t)partVol[i].bytesPerCluster();
       Serial.printf(" Partition Total Size:%llu Used:%llu time us: %u\n", total_size, used_size, (uint32_t)em_sizes);
 
-      em_sizes = 0; // lets see how long this one takes. 
-      uint32_t free_clusters_fast = GetFreeClusterCount(msc.usbDrive(), partVol[i]);
-      Serial.printf("    Free Clusters: API: %u by CB:%u time us: %u\n", free_cluster_count, free_clusters_fast, (uint32_t)em_sizes);
-      
-      em_sizes = 0; // lets see how long this one takes. 
-      uint32_t free_clusters_info = partVol[i].getFSInfoSectorFreeClusterCount();
-      Serial.printf("    Free Clusters: Info: %u time us: %u\n", free_clusters_info, (uint32_t)em_sizes);
-
+      em_sizes = 0; // lets see how long this one takes.
+      Serial.printf("    Free Clusters: API: %u  time us: %u\n", free_cluster_count, (uint32_t)em_sizes);
 
       //partVol[i].ls();
     }
