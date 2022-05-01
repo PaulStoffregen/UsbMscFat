@@ -81,7 +81,7 @@ void setup() {
   if (!MSC.begin(&msDrive1)) {
     // stop here, but print a message repetitively
     while (1) {
-      Serial.println("Unable to access the SD card");
+      Serial.println("Unable to access the USB drive");
       delay(500);
     }
   }
@@ -103,9 +103,9 @@ void playFile(const char *filename)
   while (playWav1.isPlaying()) {
     // uncomment these lines if you audio shield
     // has the optional volume pot soldered
-    float vol = analogRead(15);
-    vol = vol / 1024;
-    sgtl5000_1.volume(vol);
+    //float vol = analogRead(15);
+    //vol = vol / 1024;
+    //sgtl5000_1.volume(vol);
   }
 }
 
