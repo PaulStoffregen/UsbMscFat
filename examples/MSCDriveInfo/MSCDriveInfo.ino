@@ -75,11 +75,11 @@ void setup()
 //  Serial.println();
   Serial.print("Cluster Size (bytes): ");
   Serial.println(myDrive1.vol()->bytesPerCluster());
-  volumesize = myDrive1.blocksPerCluster();    // clusters are collections of blocks
+  volumesize = myDrive1.sectorsPerCluster();   // clusters are collections of sectors
   volumesize *= myDrive1.clusterCount();       // we'll have a lot of clusters
   if (volumesize < 8388608ul) {
     Serial.print("Volume size (bytes): ");
-    Serial.println(volumesize * 512);        // USB drive blocks default to 512 bytes
+    Serial.println(volumesize * 512);        // USB drive sectors default to 512 bytes
   }
   Serial.print("Volume size (Kbytes): ");
   volumesize /= 2;
@@ -105,11 +105,11 @@ void setup()
 //  Serial.println();
   Serial.print("Cluster Size (bytes): ");
   Serial.println(myDrive2.vol()->bytesPerCluster());
-  volumesize = myDrive2.blocksPerCluster();    // clusters are collections of blocks
+  volumesize = myDrive2.sectorsPerCluster();   // clusters are collections of sectors
   volumesize *= myDrive2.clusterCount();       // we'll have a lot of clusters
   if (volumesize < 8388608ul) {
     Serial.print("Volume size (bytes): ");
-    Serial.println(volumesize * 512);        // USB drive blocks default to 512 bytes
+    Serial.println(volumesize * 512);        // USB drive sectors default to 512 bytes
   }
   Serial.print("Volume size (Kbytes): ");
   volumesize /= 2;
