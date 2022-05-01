@@ -47,8 +47,8 @@ SdFs sdio;
 SdFs spi;
 
 // Create SdFat source and destination file pointers.
-PFsFile file1; // USB srcType
-PFsFile file2; // USB destType
+FsFile file1; // USB srcType
+FsFile file2; // USB destType
 FsFile file3;  // SD srcType
 FsFile file4;   // SD destType
 

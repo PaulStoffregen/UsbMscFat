@@ -31,7 +31,7 @@
  */
 #include "USBHost_t36.h"
 #include "USBmsc.h"
-#include "PFsLib/PFsLib.h"
+#include "FsLib/FsLib.h"
 
 //------------------------------------------------------------------------------
 /** MSCFat version */
@@ -315,7 +315,7 @@ class UsbBase : public Vol {
  * \class USBFs
  * \brief SD file system class for FAT16, FAT32, and exFAT volumes.
  */
-class UsbFs : public UsbBase<PFsVolume> {
+class UsbFs : public UsbBase<FsVolume> {
  public:
   /** Format a SD card FAT or exFAT.
    *

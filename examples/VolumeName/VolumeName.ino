@@ -68,7 +68,7 @@ void _getfreeclustercountCB(uint32_t token, uint8_t *buffer)
 }
 
 //-------------------------------------------------------------------------------------------------
-uint32_t GetFreeClusterCount(USBmscInterface *usmsci, PFsVolume &partVol)
+uint32_t GetFreeClusterCount(USBmscInterface *usmsci, FsVolume &partVol)
 {
 
   FatVolume* fatvol =  partVol.getFatVol();
@@ -287,7 +287,7 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
   mbrDmp( msc.usbDrive() );
 
   bool partition_valid[4];
-  PFsVolume partVol[4];
+  FsVolume partVol[4];
   char volName[32];
 
   for (uint8_t i = 0; i < 4; i++) {
@@ -328,7 +328,7 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
  } 
 
 void SetVolumeLabel(FsBlockDeviceInterface *blockDev, uint8_t part, char *new_name)  {
-  PFsVolume partVol;
+  FsVolume partVol;
   Serial.printf("\nTry to set device:%x part:%u to:%s\n", (uint32_t)blockDev, part, new_name);
   if (!partVol.begin(blockDev, true, part)) {
     Serial.println("*** Failed to open partition***");
@@ -376,10 +376,10 @@ void loop(void) {
   } else {
     Serial.println("SD card is present.\n");
     mbrDmp(sd.card() );
-    PFsVolume partVol;
+    FsVolume partVol;
 
     for (uint8_t i = 1; i < 5; i++) {
-      PFsVolume partVol;
+      FsVolume partVol;
       char volName[32];
       if (!partVol.begin(sd.card(), true, i)) continue; // not a valid volume.
       partVol.chvol();

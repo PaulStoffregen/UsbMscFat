@@ -15,7 +15,7 @@ USBHub hub2(myusb);
 // delay after a USB MSC device is plugged in. This is waiting for initialization
 // but after it is initialized ther should be no delay.
 #define CNT_PARITIONS 10 
-PFsVolume partVols[CNT_PARITIONS];
+FsVolume partVols[CNT_PARITIONS];
 uint8_t partVols_drive_index[CNT_PARITIONS];
 uint8_t count_partVols = 0;
   
@@ -35,7 +35,7 @@ SdFs sdSPI;
 #define SD_SPI_CS 10
 #define SPI_SPEED SD_SCK_MHZ(33)  // adjust to sd card 
 
-PFsLib pfsLIB;
+FsLib pfsLIB;
 
 uint8_t  sectorBuffer[512];
 uint8_t volName[32];
@@ -105,7 +105,7 @@ void processSDDrive()
     return;
   }
   pfsLIB.mbrDmp(sd.card(), (uint32_t)-1 , Serial);
-//  PFsVolume partVol;
+//  FsVolume partVol;
 
   for (uint8_t i = 0; i < 4; i++) {
   if (count_partVols == CNT_PARITIONS) return; // don't overrun
@@ -184,7 +184,7 @@ void CreatePartition(uint8_t drive_index, uint32_t formatType, uint32_t starting
 void InitializeBlockDevice(uint8_t drive_index, uint8_t fat_type)
 {
   FsBlockDeviceInterface *dev = nullptr;
-  PFsVolume partVol;
+  FsVolume partVol;
 
   for (int ii = 0; ii < count_partVols; ii++) {
     if (partVols_drive_index[ii] == drive_index) {

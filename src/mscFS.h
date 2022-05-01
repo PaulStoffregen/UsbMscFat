@@ -44,7 +44,7 @@ private:
 	// openNextFile() while traversing a directory.
 	// Only the abstract File class which references these derived
 	// classes is meant to have a public constructor!
-	MSCFile(const PFsFile &file) : mscfatfile(file), filename(nullptr) { }
+	MSCFile(const FsFile &file) : mscfatfile(file), filename(nullptr) { }
 	friend class MSCClass;
 public:
 	virtual ~MSCFile(void) {
@@ -113,7 +113,7 @@ public:
 		return mscfatfile.isDirectory();
 	}
 	virtual File openNextFile(uint8_t mode=0) {
-		PFsFile file = mscfatfile.openNextFile();
+		FsFile file = mscfatfile.openNextFile();
 		if (file) return File(new MSCFile(file));
 		return File();
 	}
@@ -139,7 +139,7 @@ public:
 #endif
 
 private:
-	PFsFile mscfatfile;
+	FsFile mscfatfile;
 	char *filename;
 };
 
@@ -156,7 +156,7 @@ public:
 		oflag_t flags = O_READ;
 		if (mode == FILE_WRITE) { flags = O_RDWR | O_CREAT | O_AT_END; }
 		else if (mode == FILE_WRITE_BEGIN) { flags = O_RDWR | O_CREAT; }
-		PFsFile file = mscfs.open(filepath, flags);
+		FsFile file = mscfs.open(filepath, flags);
 		if (file) return File(new MSCFile(file));
 			return File();
 	}

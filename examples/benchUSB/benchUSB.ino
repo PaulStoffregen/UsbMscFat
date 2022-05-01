@@ -19,10 +19,6 @@ USBHub hub4(myusb);
 msController msDrive1(myusb);
 msController msDrive2(myusb);
 
-// SD_FAT_TYPE = 0 for SdFat/File as defined in SdFatConfig.h,
-// 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
-#define SD_FAT_TYPE 3
-
 // Set PRE_ALLOCATE true to pre-allocate file clusters.
 const bool PRE_ALLOCATE = true;
 
@@ -52,22 +48,8 @@ const uint32_t FILE_SIZE = 1024000UL*FILE_SIZE_MB;
 uint32_t buf32[(BUF_SIZE + 3)/4];
 uint8_t* buf = (uint8_t*)buf32;
 
-#if SD_FAT_TYPE == 0
-SdFat sd;
-File file;
-#elif SD_FAT_TYPE == 1
-SdFat32 sd;
-File32 file;
-#elif SD_FAT_TYPE == 2
-SdExFat sd;
-ExFile file;
-#elif SD_FAT_TYPE == 3
 UsbFs msc1;
-PFsFile file;
-//MscFile file;
-#else  // SD_FAT_TYPE
-#error Invalid SD_FAT_TYPE
-#endif  // SD_FAT_TYPE
+FsFile file;
 
 // Serial output stream
 ArduinoOutStream cout(Serial);
