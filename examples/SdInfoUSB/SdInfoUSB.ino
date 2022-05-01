@@ -33,7 +33,7 @@ void errorPrint() {
 //------------------------------------------------------------------------------
 bool mbrDmp() {
   MbrSector_t mbr;
-  bool valid = true;
+  //bool valid = true;
   if (!msc1.usbDrive()->readSector(0, (uint8_t*)&mbr)) {
     cout << F("\nread MBR failed.\n");
     errorPrint();
@@ -88,7 +88,7 @@ void setup() {
   Serial.begin(9600);
   // Wait for USB Serial
   while (!Serial) {
-    SysCall::yield();
+    yield();
   }
   myusb.begin();
   cout << F("MSC Fat version: ") << MSC_FAT_VERSION << endl;
@@ -104,7 +104,7 @@ void loop() {
   // F stores strings in flash to save RAM
   cout << F("\ntype any character to start\n");
   while (!Serial.available()) {
-    SysCall::yield();
+    yield();
   }
   uint32_t t = millis();
   if (!msc1.usbDriveBegin(&msDrive1)) {

@@ -19,7 +19,7 @@ UsbExFat msc1;
 //------------------------------------------------------------------------------
 void errorHalt() {
   msc1.printMscError(&Serial);
-  SysCall::halt();
+  while (1) ; // stop here
 }
 #define error(s) (Serial.println(F(s)),errorHalt())
 //------------------------------------------------------------------------------

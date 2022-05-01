@@ -183,7 +183,7 @@ void CreatePartition(uint8_t drive_index, uint32_t formatType, uint32_t starting
 // Function to handle one MS Drive...
 void InitializeBlockDevice(uint8_t drive_index, uint8_t fat_type)
 {
-  BlockDeviceInterface *dev = nullptr;
+  FsBlockDeviceInterface *dev = nullptr;
   PFsVolume partVol;
 
   for (int ii = 0; ii < count_partVols; ii++) {
@@ -235,7 +235,7 @@ void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
-    SysCall::yield(); // wait for serial port to connect.
+    yield(); // wait for serial port to connect.
   }
 
   // Start USBHost_t36, HUB(s) and USB devices.

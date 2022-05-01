@@ -79,7 +79,7 @@ void setup() {
 
   // Wait for USB Serial
   while (!Serial) {
-    SysCall::yield();
+    yield();
   }
   
   myusb.begin();
@@ -106,7 +106,7 @@ void loop() {
   // F() stores strings in flash to save RAM
   cout << F("Type any character to start\n");
   while (!Serial.available()) {
-    SysCall::yield();
+    yield();
   }
 #if HAS_UNUSED_STACK
   cout << F("FreeStack: ") << FreeStack() << endl;

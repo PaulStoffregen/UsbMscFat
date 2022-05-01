@@ -62,7 +62,7 @@ void setup() {
   Serial.begin(9600);
   // Wait for USB Serial
   while (!Serial) {
-    SysCall::yield();
+    yield();
   }
   
    // Start USBHost_t36, HUB(s) and USB devices.

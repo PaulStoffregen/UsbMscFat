@@ -166,7 +166,7 @@ void setup()
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
-    SysCall::yield(); // wait for serial port to connect.
+    yield(); // wait for serial port to connect.
   }
 
   Serial.printf("MULTI USB DRIVE AND SD CARD FILE COPY TESTING\n\n");

@@ -97,7 +97,7 @@ uint32_t GetFreeClusterCount(USBmscInterface *usmsci, PFsVolume &partVol)
 
 //-------------------------------------------------------------------------------------------------
 
-bool mbrDmpExtended(BlockDeviceInterface *blockDev, uint32_t sector, uint8_t indent) {
+bool mbrDmpExtended(FsBlockDeviceInterface *blockDev, uint32_t sector, uint8_t indent) {
   MbrSector_t mbr;
   // bool valid = true;
   if (!blockDev->readSector(sector, (uint8_t*)&mbr)) {
@@ -154,7 +154,7 @@ bool mbrDmpExtended(BlockDeviceInterface *blockDev, uint32_t sector, uint8_t ind
 }
 //-------------------------------------------------------------------------------------------------
 
-bool mbrDmp(BlockDeviceInterface *blockDev) {
+bool mbrDmp(FsBlockDeviceInterface *blockDev) {
   MbrSector_t mbr;
   // bool valid = true;
   if (!blockDev->readSector(0, (uint8_t*)&mbr)) {
@@ -223,7 +223,7 @@ pinMode(2, OUTPUT);
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
-    SysCall::yield(); // wait for serial port to connect.
+    yield(); // wait for serial port to connect.
   }
 
   // Start USBHost_t36, HUB(s) and USB devices.
@@ -327,7 +327,7 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
   }
  } 
 
-void SetVolumeLabel(BlockDeviceInterface *blockDev, uint8_t part, char *new_name)  {
+void SetVolumeLabel(FsBlockDeviceInterface *blockDev, uint8_t part, char *new_name)  {
   PFsVolume partVol;
   Serial.printf("\nTry to set device:%x part:%u to:%s\n", (uint32_t)blockDev, part, new_name);
   if (!partVol.begin(blockDev, true, part)) {
