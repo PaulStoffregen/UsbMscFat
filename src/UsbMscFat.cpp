@@ -30,17 +30,12 @@
 
 MSCClass MSC;
 
-//#ifdef HAS_USB_MSC_CLASS
 const uint32_t BUSY_TIMEOUT_MICROS = 1000000;
-
-//static bool yieldTimeout(bool (*fcn)()); //Not used yet, if at all
-//static bool waitTimeout(bool (*fcn)());  //Not used yet, if at all
 
 static bool m_initDone = false;
 static bool (*m_busyFcn)() = 0;
 static uint8_t m_errorCode = MS_NO_MEDIA_ERR;
 static uint32_t m_errorLine = 0;
-//static msController *thisDrive = nullptr;
 bool isBusyRead();
 bool isBusyWrite();
 

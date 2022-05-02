@@ -207,14 +207,13 @@ private:
 #ifndef USBmsc_h
 #define USBmsc_h
 
-typedef USBmscInterface mscDevice;
 /**
  * \class USBmscFactory
  * \brief Setup a USB Mass Storage Device.
  */
 class USBmscFactory {
  public:
-  mscDevice* newMSCDevice(msController *pDrive) {
+  USBmscInterface* newMSCDevice(msController *pDrive) {
     m_USBmscDrv.begin(pDrive);
     return &m_USBmscDrv;
   }
@@ -226,19 +225,10 @@ class USBmscFactory {
 
 
 
-#ifndef USBFat_h
-#define USBFat_h
-/**
- * \file
- * \brief main UsbFs include file.
- */
-//#include "USBHost_t36.h"
-//#include "USBmsc.h"
-//#include "FsLib/FsLib.h"
 
-//------------------------------------------------------------------------------
 /** MSCFat version */
 #define MSC_FAT_VERSION "1.0.0"
+
 //==============================================================================
 /**
  * \class UsbBase
@@ -270,7 +260,7 @@ class UsbBase : public Vol {
   }
   //----------------------------------------------------------------------------
   /** \return Pointer to USB MSC object. */
-  mscDevice* usbDrive() {return m_USBmscDrive;}
+  USBmscInterface* usbDrive() {return m_USBmscDrive;}
   //---------------------------------------------------------------------------
   /** Initialize USB MSC drive.
    *
@@ -509,7 +499,7 @@ class UsbBase : public Vol {
 #endif  // ENABLE_ARDUINO_SERIAL
   //----------------------------------------------------------------------------
  private:
-  mscDevice*  m_USBmscDrive;
+  USBmscInterface*  m_USBmscDrive;
   USBmscFactory m_USBmscFactory;
   msController *thisMscDrive;
 };
@@ -542,64 +532,9 @@ class UsbFs : public UsbBase<FsVolume> {
   }
 };
 //------------------------------------------------------------------------------
-typedef UsbFs UsbFat;
-typedef FsBaseFile UsbBaseFile;
-/**
- * \class SdFile
- * \brief FAT16/FAT32 file with Print.
- */
-class MscFile : public PrintFile<UsbBaseFile> {
- public:
-  MscFile() {}
-  /** Create an open SdFile.
-   * \param[in] path path for file.
-   * \param[in] oflag open flags.
-   */
-  MscFile(const char* path, oflag_t oflag) {
-    open(path, oflag);
-  }
-  /** Set the date/time callback function
-   *
-   * \param[in] dateTime The user's call back function.  The callback
-   * function is of the form:
-   *
-   * \code
-   * void dateTime(uint16_t* date, uint16_t* time) {
-   *   uint16_t year;
-   *   uint8_t month, day, hour, minute, second;
-   *
-   *   // User gets date and time from GPS or real-time clock here
-   *
-   *   // return date using FS_DATE macro to format fields
-   *   *date = FS_DATE(year, month, day);
-   *
-   *   // return time using FS_TIME macro to format fields
-   *   *time = FS_TIME(hour, minute, second);
-   * }
-   * \endcode
-   *
-   * Sets the function that is called when a file is created or when
-   * a file's directory entry is modified by sync(). All timestamps,
-   * access, creation, and modify, are set when a file is created.
-   * sync() maintains the last access date and last modify date/time.
-   *
-   */
-  static void dateTimeCallback(
-    void (*dateTime)(uint16_t* date, uint16_t* time)) {
-    FsDateTime::setCallback(dateTime);
-  }
-  /**  Cancel the date/time callback function. */
-  static void dateTimeCallbackCancel() {
-    FsDateTime::clearCallback();
-  }
-};
-#endif  // USBFat_h
 
 
 
-
-#ifndef __MSCFS_H__
-#define __MSCFS_H__
 
 // Use FILE_READ & FILE_WRITE as defined by FS.h
 #if defined(FILE_READ) && !defined(FS_H)
@@ -797,7 +732,6 @@ public:
 	}
 };
 
-#endif // __MSCFS_H__
 
 
 
