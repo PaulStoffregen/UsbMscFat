@@ -100,7 +100,7 @@ bool USBMSCDevice::writeSectors(uint32_t sector, const uint8_t* src, size_t n) {
 
 
 
-const char *decodeSenseKey(uint8_t senseKey) {
+static const char *decodeSenseKey(uint8_t senseKey) {
 	static char msg[64];
 #undef SENSE_KEY_MAP
 	switch (senseKey) {
@@ -114,7 +114,7 @@ const char *decodeSenseKey(uint8_t senseKey) {
 	return msg;
 }
 
-const char *decodeAscAscq(uint8_t asc, uint8_t ascq) {
+static const char *decodeAscAscq(uint8_t asc, uint8_t ascq) {
 	static char msg[64];
 	uint16_t ascAscq = asc<<8 | ascq;
 
@@ -137,7 +137,7 @@ const char *decodeAscAscq(uint8_t asc, uint8_t ascq) {
 }
 
 //------------------------------------------------------------------------------
-void printMscAscError(print_t* pr, msController *pDrive) {
+static void printMscAscError(print_t* pr, msController *pDrive) {
 		Serial.printf(" --> Type: %s Cause: %s\n",
 		decodeSenseKey(pDrive->msSense.SenseKey),
 		decodeAscAscq(pDrive->msSense.AdditionalSenseCode,
@@ -146,137 +146,23 @@ void printMscAscError(print_t* pr, msController *pDrive) {
 }
 
 
-// Print error info and halt.
-//
-FLASHMEM
-void UsbFs::errorHalt(print_t* pr) {
-  if (mscErrorCode()) {
-    pr->print(F("mscError: 0X"));
-    pr->print(mscErrorCode(), HEX);
-    pr->print(F(",0X"));
-    pr->println(mscErrorData(), HEX);
-  } else if (!FsVolume::fatType()) {
-    pr->println(F("Check USB drive format."));
-  }
-  while (1) ;
-}
-
-// Print error info and halt.
-//
-FLASHMEM
-void UsbFs::errorHalt(print_t* pr, const char* msg) {
-  pr->print(F("error: "));
-  pr->println(msg);
-  errorHalt(pr);
-}
-
-// Print msg and halt.
-//
-FLASHMEM
-void UsbFs::errorHalt(print_t* pr, const __FlashStringHelper* msg) {
-  pr->print(F("error: "));
-  pr->println(msg);
-  errorHalt(pr);
-}
-
-// Print error info and halt.
-//
-FLASHMEM
-void UsbFs::initErrorHalt(print_t* pr) {
-  initErrorPrint(pr);
-  while (1) ;
-}
-
-// Print error info and halt.
-//
-FLASHMEM
-void UsbFs::initErrorHalt(print_t* pr, const char* msg) {
-  pr->println(msg);
-  initErrorHalt(pr);
-}
-
-// Print error info and halt.
-//
-FLASHMEM
-void UsbFs::initErrorHalt(Print* pr, const __FlashStringHelper* msg) {
-  pr->println(msg);
-  initErrorHalt(pr);
-}
-
-// Print error details after begin() fails.
-//
-FLASHMEM
-void UsbFs::initErrorPrint(Print* pr) {
-  pr->println(F("begin() failed"));
-  if (mscErrorCode()) {
-    pr->println(F("Do not reformat the USB drive."));
-    if (mscErrorCode() == MS_NO_MEDIA_ERR) {
-      pr->println(F("Is USB drive connected?"));
-    }
-  }
-  errorPrint(pr);
-}
-
-// Print volume FAT/exFAT type.
-//
-FLASHMEM
-void UsbFs::printFatType(print_t* pr) {
-  if (FsVolume::fatType() == FAT_TYPE_EXFAT) {
-    pr->print(F("exFAT"));
-  } else {
-    pr->print(F("FAT"));
-    pr->print(FsVolume::fatType());
-  }
-}
-
-// Print USB drive errorCode and errorData.
-//
-FLASHMEM
-void UsbFs::errorPrint(print_t* pr) {
-  if (mscErrorCode()) {
-    pr->print(F("mscError: 0X"));
-    pr->println(mscErrorCode(), HEX);
-    // pr->print(F(",0X"));
-    // pr->println(mscErrorData(), HEX);
-  } else if (!FsVolume::fatType()) {
-    pr->println(F("Check USB drive format."));
-  }
-}
-
-// Print msg, any USB drive error code.
-//
-FLASHMEM
-void UsbFs::errorPrint(print_t* pr, char const* msg) {
-  pr->print(F("error: "));
-  pr->println(msg);
-  errorPrint(pr);
-}
-
-// Print msg, any USB drive error code.
-//
-FLASHMEM
-void UsbFs::errorPrint(Print* pr, const __FlashStringHelper* msg) {
-  pr->print(F("error: "));
-  pr->println(msg);
-  errorPrint(pr);
-}
-
 // Print error info and return.
 //
 FLASHMEM
-void UsbFs::printMscError(print_t* pr) {
-  if (mscErrorCode()) {
-    if (mscErrorCode() == 0x28) {
-      pr->println(F("No USB drive detected, plugged in?"));
+void MSCClass::printError(Print &p) {
+  const uint8_t err = device.errorCode();
+  if (err) {
+    if (err == 0x28) {
+      p.println(F("No USB drive detected, plugged in?"));
     }
-    pr->print(F("USB drive error: "));
-    pr->print(F("0x"));
-    pr->print(mscErrorCode(), HEX);
-    pr->print(F(",0x"));
-    pr->print(mscErrorData(), HEX);
-    printMscAscError(pr, device.thisDrive);
-  } else if (!FsVolume::fatType()) {
-    pr->println(F("Check USB drive format."));
+    p.print(F("USB drive error: "));
+    p.print(F("0x"));
+    p.print(err, HEX);
+    p.print(F(",0x"));
+    p.print(device.errorData(), HEX);
+    printMscAscError(&p, device.thisDrive);
+  } else if (!mscfs.fatType()) {
+    p.println(F("Check USB drive format."));
   }
 }
 

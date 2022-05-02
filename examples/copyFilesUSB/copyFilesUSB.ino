@@ -48,8 +48,8 @@ SdFs spi;
 // Create SdFat source and destination file pointers.
 FsFile file1; // USB srcType
 FsFile file2; // USB destType
-FsFile file3;  // SD srcType
-FsFile file4;   // SD destType
+FsFile file3; // SD srcType
+FsFile file4; // SD destType
 
 // File to copy. This file is provided in the extras folder in ths library.
 // Change this to any other file you wish to copy.
@@ -63,7 +63,8 @@ bool driveAvailable(msController *pDrive, MSCClass *mscVol) {
   }
   if(!mscVol->mscfs.fatType()) {  // USB drive present try mount it.
     if (!mscVol->begin(pDrive)) {
-      mscVol->mscfs.initErrorPrint(&Serial); // Could not mount it print reason.
+      Serial.println("Could not mount drive");
+      mscVol->printError(Serial);
       return false;
     }
   }
@@ -180,7 +181,7 @@ void setup()
   // Initialize USB drive 1
   Serial.print("Initializing USB MSC drive 1...");
   if (!msc1.begin(&msDrive1)) {
-    msc1.mscfs.initErrorPrint(&Serial);
+    msc1.printError(Serial);
   } else {
     Serial.println("USB drive 1 is present.");
   }
@@ -188,7 +189,7 @@ void setup()
   // Initialize USB drive 2
   Serial.print("\nInitializing USB MSC drive 2...");
   if (!msc2.begin(&msDrive2)) {
-    msc2.mscfs.initErrorPrint(&Serial);
+    msc2.printError(Serial);
   } else {
     Serial.println("USB drive 2 is present.");
   }

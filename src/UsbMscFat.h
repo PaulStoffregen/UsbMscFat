@@ -38,17 +38,6 @@
 #define UsbMscFat_h
 
 
-const char *decodeSenseKey(uint8_t senseKey);
-const char *decodeAscAscq(uint8_t asc, uint8_t ascq);
-
-void printMscAscError(print_t* pr, msController *pDrive);
-
-inline uint32_t USBmscCapacity(msController *pDrv) {
-	return (pDrv->msDriveInfo.capacity.Blocks); 
-}
-
-
-
 /**
  * \class USBMSCDevice  TODO: to become part of msController class
  * \brief Raw USB Drive accesss.
@@ -97,11 +86,11 @@ class USBMSCDevice : public FsBlockDeviceInterface {
     void (*callback)(uint32_t, uint8_t *), uint32_t token);
 
 private:
+  friend class MSCClass;
   msController *thisDrive = nullptr;
   bool m_initDone = false;
   uint8_t m_errorCode = MS_NO_MEDIA_ERR;
   uint32_t m_errorLine = 0;
-  friend class UsbFs;
 };
 
 
@@ -111,81 +100,6 @@ private:
 #define MSC_FAT_VERSION "1.0.0"
 
 //==============================================================================
-
-class UsbFs : public FsVolume {
-private:
-  // UsbFs are only created as part of MSCClass.  To call SdFat functions,
-  // you can access UsbFs within MSCClass as member "mscfs".
-  UsbFs() {}
-  friend class MSCClass;
-public:
-  //----------------------------------------------------------------------------
-  /** Initialize USB drive and file system.
-   *
-   * \param[in] msController drive.
-   * \return true for success or false for failure.
-   */
-  bool begin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
-    // Serial.printf("UsbFs::begin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
-    device.begin(pDrive);
-    if (device.errorCode() != 0) return false;
-    // Serial.println("    After usbDriveBegin");
-    return FsVolume::begin(&device, setCwv, part);
-  }
-  //---------------------------------------------------------------------------
-  // TODO: programs using these should be offered a better API for their needs....
-  FsVolume * vol() { return this; } // is this redundant?
-  bool volumeBegin() { return FsVolume::begin(&device); } // is this redundant?
-  FsBlockDeviceInterface * usbDrive() { return &device; } // used by VolumeName.ino
-  //---------------------------------------------------------------------------
-#if 0
-  bool format(print_t* pr = nullptr) {
-    static_assert(sizeof(m_volMem) >= 512, "m_volMem too small");
-    uint32_t sectorCount = device.sectorCount();
-    if (sectorCount == 0) {
-      return false;
-    }
-    end();
-    if (sectorCount > 67108864) {
-      ExFatFormatter fmt;
-      return fmt.format(&device, reinterpret_cast<uint8_t*>(m_volMem), pr);
-    } else {
-      FatFormatter fmt;
-      return fmt.format(&device, reinterpret_cast<uint8_t*>(m_volMem), pr);
-    }
-  }
-#endif
-  // Error Message Printing
-  void errorHalt(print_t* pr);
-  void errorHalt(print_t* pr, const char* msg);
-  void errorHalt(print_t* pr, const __FlashStringHelper* msg);
-  void initErrorHalt(print_t* pr);
-  void initErrorHalt(print_t* pr, const char* msg);
-  void initErrorHalt(Print* pr, const __FlashStringHelper* msg);
-  void initErrorPrint(Print* pr);
-  void printFatType(print_t* pr);
-  void errorPrint(print_t* pr);
-  void errorPrint(print_t* pr, char const* msg);
-  void errorPrint(Print* pr, const __FlashStringHelper* msg);
-  void printMscError(print_t* pr);
-  uint8_t mscErrorCode() { return device.errorCode(); }
-  uint8_t mscErrorData() { return device.errorData(); }
-#if ENABLE_ARDUINO_SERIAL
-  void initErrorPrint() { initErrorPrint(&Serial); }
-  void errorHalt(const __FlashStringHelper* msg) { errorHalt(&Serial, msg); }
-  void errorHalt() { errorHalt(&Serial); }
-  void errorHalt(const char* msg) { errorHalt(&Serial, msg); }
-  void initErrorHalt() { initErrorHalt(&Serial); }
-  void errorPrint(const char* msg) { errorPrint(&Serial, msg); }
-  void errorPrint(const __FlashStringHelper* msg) { errorPrint(&Serial, msg); }
-  void initErrorHalt(const char* msg) {initErrorHalt(&Serial, msg);}
-  void initErrorHalt(const __FlashStringHelper* msg) { initErrorHalt(&Serial, msg); }
-#endif  // ENABLE_ARDUINO_SERIAL
-  //----------------------------------------------------------------------------
-private:
-  USBMSCDevice device; // to become a pointer when API moves away from begin()
-};
-
 
 
 // Use FILE_READ & FILE_WRITE as defined by FS.h
@@ -313,7 +227,9 @@ class MSCClass : public FS
 public:
 	MSCClass() { }
 	bool begin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
-		return mscfs.begin(pDrive, setCwv, part);
+		device.begin(pDrive);
+		if (device.errorCode() != 0) return false;
+		return mscfs.begin(&device, setCwv, part);
 	}
 	File open(const char *filepath, uint8_t mode = FILE_READ) {
 		oflag_t flags = O_READ;
@@ -345,8 +261,10 @@ public:
 	uint64_t totalSize() {
 		return (uint64_t)mscfs.clusterCount() * (uint64_t)mscfs.bytesPerCluster();
 	}
-public: // allow access, so users can access SdFat APIs
-	UsbFs mscfs;
+	void printError(Print &p = Serial);
+public:
+	FsVolume mscfs;      // SdFat API
+	USBMSCDevice device; // to become a pointer when API moves away from begin()
 };
 
 extern MSCClass MSC;

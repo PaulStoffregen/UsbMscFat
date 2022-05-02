@@ -62,7 +62,7 @@ void setup()
   Serial.println("\nInitializing USB MSC drive 1...");
   if (!myDrive1.begin(&msDrive1)) {
     Serial.print("initialization failed with code: ");
-    Serial.println(myDrive1.mscfs.mscErrorCode());
+    myDrive1.printError(Serial);
     return;
   }
   Serial.printf("myDrive1 Info:\n");
@@ -73,7 +73,6 @@ void setup()
   Serial.println(myDrive1.mscfs.fatType(), DEC);
   // Serial.println();
   Serial.print("Cluster Size (bytes): ");
-  //Serial.println(myDrive1.vol()->bytesPerCluster());
   Serial.println(myDrive1.mscfs.bytesPerCluster());
   volumesize = myDrive1.mscfs.sectorsPerCluster();   // clusters are collections of sectors
   volumesize *= myDrive1.mscfs.clusterCount();       // we'll have a lot of clusters
@@ -91,7 +90,7 @@ void setup()
   Serial.println("\nInitializing USB MSC drive 2...");
   if (!myDrive2.begin(&msDrive2)) {
     Serial.print("initialization failed with code: ");
-    Serial.println(myDrive2.mscfs.mscErrorCode());
+    myDrive2.printError(Serial);
     return;
   }
   Serial.printf("myDrive2 Info:\n");
@@ -104,7 +103,6 @@ void setup()
   Serial.println(myDrive2.mscfs.fatType(), DEC);
   // Serial.println();
   Serial.print("Cluster Size (bytes): ");
-  //Serial.println(myDrive2.vol()->bytesPerCluster());
   Serial.println(myDrive2.mscfs.bytesPerCluster());
   volumesize = myDrive2.mscfs.sectorsPerCluster();   // clusters are collections of sectors
   volumesize *= myDrive2.mscfs.clusterCount();       // we'll have a lot of clusters
