@@ -31,23 +31,6 @@
 
 MSCClass MSC;
 
-const uint32_t BUSY_TIMEOUT_MICROS = 1000000;
-
-static bool m_initDone = false;
-static bool (*m_busyFcn)() = 0;
-static uint8_t m_errorCode = MS_NO_MEDIA_ERR;
-static uint32_t m_errorLine = 0;
-bool isBusyRead();
-bool isBusyWrite();
-
-//==============================================================================
-// Error function and macro.
-#define sdError(code) setSdErrorCode(code, __LINE__)
-inline bool setSdErrorCode(uint8_t code, uint32_t line) {
-  m_errorCode = code;
-  m_errorLine = line;
-  return false;
-}
 
 bool USBMSCDevice::isBusyRead() {
 	return thisDrive->mscTransferComplete;
@@ -72,7 +55,7 @@ uint32_t USBMSCDevice::errorLine() const {
 
 //------------------------------------------------------------------------------
 bool USBMSCDevice::isBusy() {
-  return m_busyFcn ? m_busyFcn() : !m_initDone && !thisDrive->mscTransferComplete;
+  return !m_initDone && !thisDrive->mscTransferComplete;
 }
 
 //------------------------------------------------------------------------------

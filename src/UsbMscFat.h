@@ -50,11 +50,12 @@ inline uint32_t USBmscCapacity(msController *pDrv) {
 
 
 /**
- * \class USBMSCDevice
+ * \class USBMSCDevice  TODO: to become part of msController class
  * \brief Raw USB Drive accesss.
  */
 class USBMSCDevice : public FsBlockDeviceInterface {
  public:
+  constexpr USBMSCDevice() {}
   /** Initialize the USB MSC device.
    * \param[in] Pointer to an instance of msc.
    * \return true for success or false for failure.
@@ -146,7 +147,10 @@ class USBMSCDevice : public FsBlockDeviceInterface {
   bool readSectorsWithCB(uint32_t sector, size_t ns, void (*callback)(uint32_t, uint8_t *), uint32_t token);
 
 private:
-  msController *thisDrive;
+  msController *thisDrive = nullptr;
+  bool m_initDone = false;
+  uint8_t m_errorCode = MS_NO_MEDIA_ERR;
+  uint32_t m_errorLine = 0;
   friend class UsbFs;
 };
 
