@@ -38,68 +38,23 @@
 #ifndef UsbMscFat_h
 #define UsbMscFat_h
 
-#ifndef USBmscInfo_h
-#define USBmscInfo_h
 
 const char *decodeSenseKey(uint8_t senseKey);
 const char *decodeAscAscq(uint8_t asc, uint8_t ascq);
 
 void printMscAscError(print_t* pr, msController *pDrive);
 
-//-----------------------------------------------------------------------------
-
 inline uint32_t USBmscCapacity(msController *pDrv) {
 	return (pDrv->msDriveInfo.capacity.Blocks); 
 }
 
-#endif  // USBmscInfo_h
 
 
-
-#ifndef USBmscInterface_h
-#define USBmscInterface_h
-/**
- * \class USBmscInterface
- * \brief Abstract interface for a USB Mass Storage Device.
- */
-class USBmscInterface : public FsBlockDeviceInterface {
- public:
-  /** \return error code. */
-  virtual uint8_t errorCode() const = 0;
-  /** \return error data. */
-  virtual uint32_t errorData() const = 0;
-  /** \return true if USB is busy. */
-  virtual bool isBusy() = 0;
-  /** \return true if USB read is busy. */
-  virtual bool isBusyRead();
-  /** \return true if USB write is busy. */
-  virtual bool isBusyWrite();
-    /** Read a MSC USB drive's info.
-   * \return true for success or false for failure.
-   */
-  virtual bool readUSBDriveInfo(msDriveInfo_t * driveInfo) = 0;
-  /**
-   * Determine the size of a USB Mass Storage Device.
-   *
-   * \return The number of 512 byte data sectors in the USB device
-   *         or zero if an error occurs.
-   */
-  virtual uint32_t sectorCount() = 0;
-  /** \return USB drive status. */
-  virtual uint32_t status() {return 0XFFFFFFFF;}
-
-  virtual bool readSectorsWithCB(uint32_t sector, size_t ns, void (*callback)(uint32_t, uint8_t *), uint32_t token) = 0;
-
-};
-#endif  // USBmscInterface_h
-
-#ifndef USBmscDevice_h
-#define USBmscDevice_h
 /**
  * \class USBMSCDevice
  * \brief Raw USB Drive accesss.
  */
-class USBMSCDevice : public USBmscInterface {
+class USBMSCDevice : public FsBlockDeviceInterface {
  public:
   /** Initialize the USB MSC device.
    * \param[in] Pointer to an instance of msc.
@@ -191,12 +146,10 @@ class USBMSCDevice : public USBmscInterface {
    */
   bool readSectorsWithCB(uint32_t sector, size_t ns, void (*callback)(uint32_t, uint8_t *), uint32_t token);
 
-
 private:
   msController *thisDrive;
   friend class UsbFs;
 };
-#endif  // USBmscDevice_h
 
 
 
