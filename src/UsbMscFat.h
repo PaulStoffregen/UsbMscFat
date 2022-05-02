@@ -194,6 +194,7 @@ class USBMSCDevice : public USBmscInterface {
 
 private:
   msController *thisDrive;
+  friend class UsbFs;
 };
 #endif  // USBmscDevice_h
 
@@ -216,7 +217,6 @@ class UsbFs : public FsVolume {
   bool begin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
     // Serial.printf("UsbFs::begin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
     device.begin(pDrive);
-    thisMscDrive = pDrive;
     if (device.errorCode() != 0) return false;
     // Serial.println("    After usbDriveBegin");
     return FsVolume::begin(&device, setCwv, part);
@@ -368,7 +368,7 @@ class UsbFs : public FsVolume {
       pr->print(mscErrorCode(), HEX);
       pr->print(F(",0x"));
       pr->print(mscErrorData(), HEX);
-      printMscAscError(pr, thisMscDrive);
+      printMscAscError(pr, device.thisDrive);
     } else if (!FsVolume::fatType()) {
       pr->println(F("Check USB drive format."));
     }
@@ -461,7 +461,6 @@ class UsbFs : public FsVolume {
   //----------------------------------------------------------------------------
  private:
   USBMSCDevice device;
-  msController *thisMscDrive;
 };
 
 
