@@ -230,12 +230,8 @@ class USBmscFactory {
 #define MSC_FAT_VERSION "1.0.0"
 
 //==============================================================================
-/**
- * \class UsbBase
- * \brief base USB file system template class.
- */
-template <class Vol>
-class UsbBase : public Vol {
+
+class UsbFs : public FsVolume {
  public:
   //----------------------------------------------------------------------------
   /** Initialize USB drive and file system.
@@ -253,10 +249,10 @@ class UsbBase : public Vol {
    * \return true for success or false for failure.
    */
   bool mscBegin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
-//    Serial.printf("UsbBase::mscBegin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
+    // Serial.printf("UsbBase::mscBegin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
     if (!usbDriveBegin(pDrive)) return false;
-//    Serial.println("    After usbDriveBegin");
-    return Vol::begin((USBMSCDevice*)m_USBmscDrive, setCwv, part);
+    // Serial.println("    After usbDriveBegin");
+    return FsVolume::begin((USBMSCDevice*)m_USBmscDrive, setCwv, part);
   }
   //----------------------------------------------------------------------------
   /** \return Pointer to USB MSC object. */
@@ -269,7 +265,7 @@ class UsbBase : public Vol {
    */
   bool usbDriveBegin(msController *pDrive) {
     m_USBmscDrive = m_USBmscFactory.newMSCDevice(pDrive);
-	thisMscDrive = pDrive;
+    thisMscDrive = pDrive;
     return m_USBmscDrive && !m_USBmscDrive->errorCode();
   }
   //----------------------------------------------------------------------------
@@ -283,7 +279,7 @@ class UsbBase : public Vol {
       pr->print(mscErrorCode(), HEX);
       pr->print(F(",0X"));
       pr->println(mscErrorData(), HEX);
-    } else if (!Vol::fatType()) {
+    } else if (!FsVolume::fatType()) {
       pr->println(F("Check USB drive format."));
     }
     while (1) ; //SysCall::halt();
@@ -360,11 +356,11 @@ class UsbBase : public Vol {
    * \param[in] pr Print destination.
    */
   void printFatType(print_t* pr) {
-    if (Vol::fatType() == FAT_TYPE_EXFAT) {
+    if (FsVolume::fatType() == FAT_TYPE_EXFAT) {
       pr->print(F("exFAT"));
     } else {
       pr->print(F("FAT"));
-      pr->print(Vol::fatType());
+      pr->print(FsVolume::fatType());
     }
   }
   //----------------------------------------------------------------------------
@@ -376,9 +372,9 @@ class UsbBase : public Vol {
     if (mscErrorCode()) {
       pr->print(F("mscError: 0X"));
       pr->println(mscErrorCode(), HEX);
-//      pr->print(F(",0X"));
-//      pr->println(mscErrorData(), HEX);
-    } else if (!Vol::fatType()) {
+      // pr->print(F(",0X"));
+      // pr->println(mscErrorData(), HEX);
+    } else if (!FsVolume::fatType()) {
       pr->println(F("Check USB drive format."));
     }
   }
@@ -420,7 +416,7 @@ class UsbBase : public Vol {
       pr->print(F(",0x"));
       pr->print(mscErrorData(), HEX);
       printMscAscError(pr, thisMscDrive);
-    } else if (!Vol::fatType()) {
+    } else if (!FsVolume::fatType()) {
       pr->println(F("Check USB drive format."));
     }
   }
@@ -437,15 +433,35 @@ class UsbBase : public Vol {
   uint8_t mscErrorData() {return m_USBmscDrive ? m_USBmscDrive->errorData() : 0;}
   //----------------------------------------------------------------------------
   /** \return pointer to base volume */
-  Vol* vol() {return reinterpret_cast<Vol*>(this);}
+  //Vol* vol() {return reinterpret_cast<Vol*>(this);}
+  FsVolume * vol() { return this; }
+
   //----------------------------------------------------------------------------
   /** Initialize file system after call to cardBegin.
    *
    * \return true for success or false for failure.
    */
   bool volumeBegin() {
-     return Vol::begin(m_USBmscDrive);
+     return FsVolume::begin(m_USBmscDrive);
   }
+#if 0
+  bool format(print_t* pr = nullptr) {
+    static_assert(sizeof(m_volMem) >= 512, "m_volMem too small");
+    uint32_t sectorCount = usbDrive()->sectorCount();
+    if (sectorCount == 0) {
+      return false;
+    }
+    end();
+    if (sectorCount > 67108864) {
+      ExFatFormatter fmt;
+      return fmt.format(usbDrive(), reinterpret_cast<uint8_t*>(m_volMem), pr);
+    } else {
+      FatFormatter fmt;
+      return fmt.format(usbDrive(), reinterpret_cast<uint8_t*>(m_volMem), pr);
+    }
+  }
+#endif
+
 #if ENABLE_ARDUINO_SERIAL
   /** Print error details after begin() fails. */
   void initErrorPrint() {
@@ -503,36 +519,6 @@ class UsbBase : public Vol {
   USBmscFactory m_USBmscFactory;
   msController *thisMscDrive;
 };
-//------------------------------------------------------------------------------
-/**
- * \class USBFs
- * \brief SD file system class for FAT16, FAT32, and exFAT volumes.
- */
-class UsbFs : public UsbBase<FsVolume> {
- public:
-  /** Format a SD card FAT or exFAT.
-   *
-   * \param[in] pr Optional Print information.
-   * \return true for success or false for failure.
-   */
-  bool format(print_t* pr = nullptr) {
-    static_assert(sizeof(m_volMem) >= 512, "m_volMem too small");
-    uint32_t sectorCount = usbDrive()->sectorCount();
-    if (sectorCount == 0) {
-      return false;
-    }
-    end();
-    if (sectorCount > 67108864) {
-      ExFatFormatter fmt;
-      return fmt.format(usbDrive(), reinterpret_cast<uint8_t*>(m_volMem), pr);
-    } else {
-      FatFormatter fmt;
-      return fmt.format(usbDrive(), reinterpret_cast<uint8_t*>(m_volMem), pr);
-    }
-  }
-};
-//------------------------------------------------------------------------------
-
 
 
 
