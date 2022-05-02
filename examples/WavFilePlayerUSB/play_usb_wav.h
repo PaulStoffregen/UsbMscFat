@@ -31,7 +31,7 @@
 
 #include "Arduino.h"
 #include "AudioStream.h"
-#include "mscFS.h"
+#include <UsbMscFat.h>
 
 class AudioPlayUSBWav : public AudioStream
 {
