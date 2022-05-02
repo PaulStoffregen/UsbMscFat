@@ -27,7 +27,7 @@
 
  // Modified for use with USB mass storage drives 2020 Warren Watson
 
-#include "mscFS.h"
+#include <UsbMscFat.h>
 #include <Audio.h>
 #include "play_usb_wav.h" // Should be included in 'Audio.h'
 #include <Wire.h>

@@ -1,8 +1,7 @@
 // This example is currently broken by removal of PFsLib
 // partition functions still need to be ported to SdFat FsLib
 
-#include "Arduino.h"
-#include "mscFS.h"
+#include <UsbMscFat.h>
 #include "sdios.h"
 
 // Serial output stream

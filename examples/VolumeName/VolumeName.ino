@@ -3,9 +3,8 @@
 //  An example of how to retrieve Fat32 and ExFat volume names using SdFat.
 //  Works with SD cards and USB mass storage drives.
 
-#include "Arduino.h"
+#include <UsbMscFat.h>
 #define DBG_FILE "VolumeName.ino"
-#include "mscFS.h"
 
 // Setup USBHost_t36 and as many HUB ports as needed.
 USBHost myusb;

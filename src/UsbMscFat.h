@@ -1,8 +1,12 @@
 /**
+ * Copyright (c) 2017-2020 Warren Watson
+ * This file is part of the SdFat library for use with MSC.
+ * 
  * Copyright (c) 2011-2019 Bill Greiman
- * Modified for use with MSC Copyright (c) 2017-2020 Warren Watson
  * This file is part of the SdFat library for SD memory cards.
  *
+ * Modified 2020 for use with SdFat and MSC. By Warren Watson.
+ * 
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,15 +27,214 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+
+
+#include <Arduino.h>
+#include <SdFat.h>
+#include <USBHost_t36.h>
+#include "mscSenseKeyList.h"
+
+#ifndef USBmscInfo_h
+#define USBmscInfo_h
+
+const char *decodeSenseKey(uint8_t senseKey);
+const char *decodeAscAscq(uint8_t asc, uint8_t ascq);
+
+void printMscAscError(print_t* pr, msController *pDrive);
+
+const uint8_t SD_CARD_TYPE_USB = 4;
+//-----------------------------------------------------------------------------
+
+inline uint32_t USBmscCapacity(msController *pDrv) {
+	return (pDrv->msDriveInfo.capacity.Blocks); 
+}
+
+#endif  // USBmscInfo_h
+
+
+
+#ifndef USBmscInterface_h
+#define USBmscInterface_h
+/**
+ * \class USBmscInterface
+ * \brief Abstract interface for a USB Mass Storage Device.
+ */
+class USBmscInterface : public FsBlockDeviceInterface {
+ public:
+  /** \return error code. */
+  virtual uint8_t errorCode() const = 0;
+  /** \return error data. */
+  virtual uint32_t errorData() const = 0;
+  /** \return true if USB is busy. */
+  virtual bool isBusy() = 0;
+  /** \return true if USB read is busy. */
+  virtual bool isBusyRead();
+  /** \return true if USB write is busy. */
+  virtual bool isBusyWrite();
+    /** Read a MSC USB drive's info.
+   * \return true for success or false for failure.
+   */
+  virtual bool readUSBDriveInfo(msDriveInfo_t * driveInfo) = 0;
+  /** Return the USB Drive type: USB MSC
+   * \return 4 - USB MSC.
+   */
+  virtual uint8_t usbType() const = 0;
+  /**
+   * Determine the size of a USB Mass Storage Device.
+   *
+   * \return The number of 512 byte data sectors in the USB device
+   *         or zero if an error occurs.
+   */
+  virtual uint32_t sectorCount() = 0;
+  /** \return USB drive status. */
+  virtual uint32_t status() {return 0XFFFFFFFF;}
+
+  virtual bool readSectorsWithCB(uint32_t sector, size_t ns, void (*callback)(uint32_t, uint8_t *), uint32_t token) = 0;
+
+};
+#endif  // USBmscInterface_h
+
+#ifndef USBmscDevice_h
+#define USBmscDevice_h
+/**
+ * \class USBMSCDevice
+ * \brief Raw USB Drive accesss.
+ */
+class USBMSCDevice : public USBmscInterface {
+ public:
+  /** Initialize the USB MSC device.
+   * \param[in] Pointer to an instance of msc.
+   * \return true for success or false for failure.
+   */
+  bool begin(msController *pDrive);
+  uint32_t sectorCount();
+  /**
+   * \return code for the last error. See USBmscInfo.h for a list of error codes.
+   */
+  uint8_t errorCode() const;
+  /** \return error data for last error. */
+  uint32_t errorData() const;
+  /** \return error line for last error. Tmp function for debug. */
+  uint32_t errorLine() const;
+  /**
+   * Check for busy with CMD13.
+   *
+   * \return true if busy else false.
+   */
+  bool isBusy();
+  /** Check for busy with MSC read operation
+   *
+   * \return true if busy else false.
+   */
+  bool isBusyRead();
+  /** Check for busy with MSC read operation
+   *
+   * \return true if busy else false.
+   */
+  bool isBusyWrite();
+  /**
+   * Read a USB drive's information. This contains the drive's identification
+   * information such as Manufacturer ID, Product name, Product serial
+   * number and Manufacturing date pluse more.
+   *
+   * \param[out]  msDriveInfo_t pointer to area for returned data.
+   *
+   * \return true for success or false for failure.
+   */
+  bool readUSBDriveInfo(msDriveInfo_t * driveInfo);
+  /** Return the card type: SD V1, SD V2 or SDHC
+   * \return 0 - SD V1, 1 - SD V2, or 3 - SDHC.
+   */
+  uint8_t usbType() const;
+  /**
+   * Read a 512 byte sector from an USB MSC drive.
+   *
+   * \param[in] sector Logical sector to be read.
+   * \param[out] dst Pointer to the location that will receive the data.
+   * \return true for success or false for failure.
+   */
+  bool readSector(uint32_t sector, uint8_t* dst);
+  /**
+   * Read multiple 512 byte sectors from an USB MSC drive.
+   *
+   * \param[in] sector Logical sector to be read.
+   * \param[in] ns Number of sectors to be read.
+   * \param[out] dst Pointer to the location that will receive the data.
+   * \return true for success or false for failure.
+   */
+  bool readSectors(uint32_t sector, uint8_t* dst, size_t ns);
+  /** \return USB MSC drive status. */
+  uint32_t status();
+  /** \return success if sync successful. Not for user apps. */
+  bool syncDevice();
+  /**
+   * Writes a 512 byte sector to an USB MSC drive.
+   *
+   * \param[in] sector Logical sector to be written.
+   * \param[in] src Pointer to the location of the data to be written.
+   * \return true for success or false for failure.
+   */
+  bool writeSector(uint32_t sector, const uint8_t* src);
+  /**
+   * Write multiple 512 byte sectors to an USB MSC drive.
+   *
+   * \param[in] sector Logical sector to be written.
+   * \param[in] ns Number of sectors to be written.
+   * \param[in] src Pointer to the location of the data to be written.
+   * \return true for success or false for failure.
+   */
+  bool writeSectors(uint32_t sector, const uint8_t* src, size_t ns);
+
+  /**
+   * Read multiple 512 byte sectors from an USB MSC drive, using 
+   * a callback per sector
+   *
+   * \param[in] sector Logical sector to be read.
+   * \param[in] ns Number of sectors to be read.
+   * \param[in] callback function to call for each sector read.
+   * \return true for success or false for failure.
+   */
+  bool readSectorsWithCB(uint32_t sector, size_t ns, void (*callback)(uint32_t, uint8_t *), uint32_t token);
+
+
+private:
+  msController *thisDrive;
+};
+#endif  // USBmscDevice_h
+
+
+#ifndef USBmsc_h
+#define USBmsc_h
+
+typedef USBmscInterface mscDevice;
+/**
+ * \class USBmscFactory
+ * \brief Setup a USB Mass Storage Device.
+ */
+class USBmscFactory {
+ public:
+  mscDevice* newMSCDevice(msController *pDrive) {
+    m_USBmscDrv.begin(pDrive);
+    return &m_USBmscDrv;
+  }
+ private:
+  USBMSCDevice m_USBmscDrv;
+};
+#endif  // USBmsc_h
+
+
+
+
 #ifndef USBFat_h
 #define USBFat_h
 /**
  * \file
  * \brief main UsbFs include file.
  */
-#include "USBHost_t36.h"
-#include "USBmsc.h"
-#include "FsLib/FsLib.h"
+//#include "USBHost_t36.h"
+//#include "USBmsc.h"
+//#include "FsLib/FsLib.h"
 
 //------------------------------------------------------------------------------
 /** MSCFat version */
@@ -391,3 +594,210 @@ class MscFile : public PrintFile<UsbBaseFile> {
   }
 };
 #endif  // USBFat_h
+
+
+
+
+#ifndef __MSCFS_H__
+#define __MSCFS_H__
+
+// Use FILE_READ & FILE_WRITE as defined by FS.h
+#if defined(FILE_READ) && !defined(FS_H)
+#undef FILE_READ
+#endif
+#if defined(FILE_WRITE) && !defined(FS_H)
+#undef FILE_WRITE
+#endif
+#include <FS.h>
+
+#define MSC_MAX_FILENAME_LEN 256
+
+class MSCFile : public FileImpl
+{
+private:
+	// Classes derived from File are never meant to be constructed
+	// anywhere other than open() in the parent FS class and
+	// openNextFile() while traversing a directory.
+	// Only the abstract File class which references these derived
+	// classes is meant to have a public constructor!
+	MSCFile(const FsFile &file) : mscfatfile(file), filename(nullptr) { }
+	friend class MSCClass;
+public:
+	virtual ~MSCFile(void) {
+		if (mscfatfile) mscfatfile.close();
+		if (filename) free(filename);
+	}
+#ifdef FILE_WHOAMI
+	virtual void whoami() {
+		Serial.printf("   MSCFile this=%x, refcount=%u\n",
+			(int)this, getRefcount());
+	}
+#endif
+	virtual size_t write(const void *buf, size_t size) {
+		return mscfatfile.write(buf, size);
+	}
+	virtual int peek() {
+		return mscfatfile.peek();
+	}
+	virtual int available() {
+		return mscfatfile.available();
+	}
+	virtual void flush() {
+		mscfatfile.flush();
+	}
+	virtual size_t read(void *buf, size_t nbyte) {
+		return mscfatfile.read(buf, nbyte);
+	}
+	virtual bool truncate(uint64_t size=0) {
+		return mscfatfile.truncate(size);
+	}
+	virtual bool seek(uint64_t pos, int mode = SeekSet) {
+		if (mode == SeekSet) return mscfatfile.seekSet(pos);
+		if (mode == SeekCur) return mscfatfile.seekCur(pos);
+		if (mode == SeekEnd) return mscfatfile.seekEnd(pos);
+		return false;
+	}
+	virtual uint64_t position() {
+		return mscfatfile.curPosition();
+	}
+	virtual uint64_t size() {
+		return mscfatfile.size();
+	}
+	virtual void close() {
+		if (filename) {
+			free(filename);
+			filename = nullptr;
+		}
+		mscfatfile.close();
+	}
+	virtual bool isOpen() {
+		return mscfatfile.isOpen();
+	}
+	virtual const char * name() {
+		if (!filename) {
+			filename = (char *)malloc(MSC_MAX_FILENAME_LEN);
+			if (filename) {
+				mscfatfile.getName(filename, MSC_MAX_FILENAME_LEN);
+			} else {
+				static char zeroterm = 0;
+				filename = &zeroterm;
+			}
+		}
+		return filename;
+	}
+	virtual boolean isDirectory(void) {
+		return mscfatfile.isDirectory();
+	}
+	virtual File openNextFile(uint8_t mode=0) {
+		FsFile file = mscfatfile.openNextFile();
+		if (file) return File(new MSCFile(file));
+		return File();
+	}
+	virtual void rewindDirectory(void) {
+		mscfatfile.rewindDirectory();
+	}
+#ifdef FS_FILE_SUPPORT_DATES
+	// These will all return false as only some FS support it.
+	virtual bool getAccessDateTime(uint16_t* pdate, uint16_t* ptime) {
+		return mscfatfile.getAccessDateTime(pdate, ptime);
+	}
+	virtual bool getCreateDateTime(uint16_t* pdate, uint16_t* ptime) {
+		return mscfatfile.getCreateDateTime(pdate, ptime);
+	}
+	virtual bool getModifyDateTime(uint16_t* pdate, uint16_t* ptime) {
+		return mscfatfile.getModifyDateTime(pdate, ptime);
+	}
+	virtual bool timestamp(uint8_t flags, uint16_t year, uint8_t month, uint8_t day,
+               uint8_t hour, uint8_t minute, uint8_t second) {
+		return mscfatfile.timestamp(flags, year, month, day, hour, minute, second);
+		return false;
+	}
+#endif
+
+private:
+	FsFile mscfatfile;
+	char *filename;
+};
+
+
+
+class MSCClass : public FS
+{
+public:
+	MSCClass() { }
+	bool begin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
+		return mscfs.begin(pDrive, setCwv, part);
+	}
+	File open(const char *filepath, uint8_t mode = FILE_READ) {
+		oflag_t flags = O_READ;
+		if (mode == FILE_WRITE) { flags = O_RDWR | O_CREAT | O_AT_END; }
+		else if (mode == FILE_WRITE_BEGIN) { flags = O_RDWR | O_CREAT; }
+		FsFile file = mscfs.open(filepath, flags);
+		if (file) return File(new MSCFile(file));
+			return File();
+	}
+	bool exists(const char *filepath) {
+		return mscfs.exists(filepath);
+	}
+	bool mkdir(const char *filepath) {
+		return mscfs.mkdir(filepath);
+	}
+	bool rename(const char *oldfilepath, const char *newfilepath) {
+		return mscfs.rename(oldfilepath, newfilepath);
+	}
+	bool remove(const char *filepath) {
+		return mscfs.remove(filepath);
+	}
+	bool rmdir(const char *filepath) {
+		return mscfs.rmdir(filepath);
+	}
+	uint64_t usedSize() {	
+		return  (uint64_t)(mscfs.clusterCount() - mscfs.freeClusterCount())
+		  		* (uint64_t)mscfs.bytesPerCluster();
+	}
+	uint64_t totalSize() {
+		return (uint64_t)mscfs.clusterCount() * (uint64_t)mscfs.bytesPerCluster();
+	}
+public: // allow access, so users can mix MSC & SdFat APIs
+	UsbFs mscfs;
+};
+
+extern MSCClass MSC;
+
+// do not expose these defines in Arduino sketches or other libraries
+#undef MSC_MAX_FILENAME_LEN
+
+#define SD_CARD_TYPE_USB 4
+
+class MSC2Drive
+{
+public:
+	bool init(msController *pDrive) {
+		return MSC.begin(pDrive);
+	}
+	uint8_t usbType() {
+		return MSC.mscfs.usbDrive()->usbType();
+	}
+};
+
+class MSCVolume
+{
+public:
+	bool init(MSC2Drive &usbDrive) {
+		return MSC.mscfs.vol() != nullptr;
+	}
+	uint8_t fatType() {
+		return MSC.mscfs.vol()->fatType();
+	}
+	uint32_t blocksPerCluster() {
+		return MSC.mscfs.vol()->sectorsPerCluster();
+	}
+	uint32_t clusterCount() {
+		return MSC.mscfs.vol()->clusterCount();
+	}
+};
+
+#endif // __MSCFS_H__
+
+
+

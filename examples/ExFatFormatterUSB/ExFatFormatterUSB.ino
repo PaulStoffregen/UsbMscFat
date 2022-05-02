@@ -1,5 +1,5 @@
 // Force exFAT formatting for all USB drives larger than 512MB.
-#include "mscFS.h"
+#include <UsbMscFat.h>
 
 // Setup USBHost_t36 and as many HUB ports as needed.
 USBHost myusb;

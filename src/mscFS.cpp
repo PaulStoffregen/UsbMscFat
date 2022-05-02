@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  */
 
-#include <Arduino.h>
-#include <mscFS.h>
+#include "UsbMscFat.h"
 
 MSCClass MSC;

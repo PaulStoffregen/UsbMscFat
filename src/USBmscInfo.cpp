@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "USBmscInfo.h"
+#include "UsbMscFat.h"
 
 const char *decodeSenseKey(uint8_t senseKey) {
 	static char msg[64];

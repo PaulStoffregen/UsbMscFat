@@ -1,7 +1,8 @@
 /*
  * This program attempts to initialize an SD-MSC drive and analyze its structure.
  */
-#include "mscFS.h"
+
+#include <UsbMscFat.h>
 #include "sdios.h"
 
 // Setup USBHost_t36 and as many HUB ports as needed.

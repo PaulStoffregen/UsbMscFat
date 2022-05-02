@@ -1,7 +1,7 @@
 /*
  * This program is a simple binary write/read benchmark.
  */
-#include "mscFS.h"
+#include <UsbMscFat.h>
 #include "sdios.h"
 #include "FreeStack.h"
 

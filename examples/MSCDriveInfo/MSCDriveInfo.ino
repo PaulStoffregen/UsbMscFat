@@ -1,8 +1,7 @@
 /*
   mscFS Drive Info test
 */
-// include the SD-MSC library:
-#include <mscFS.h>
+#include <UsbMscFat.h>
 
 // Setup USBHost_t36 and as many HUB ports as needed.
 USBHost myusb;

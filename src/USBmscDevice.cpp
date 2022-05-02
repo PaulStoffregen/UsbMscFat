@@ -23,8 +23,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "USBMSCDevice.h"
-#include "USBmscInfo.h"
+#include "UsbMscFat.h"
 
 //#ifdef HAS_USB_MSC_CLASS
 const uint32_t BUSY_TIMEOUT_MICROS = 1000000;

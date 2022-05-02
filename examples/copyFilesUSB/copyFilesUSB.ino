@@ -11,10 +11,9 @@
  by Warren Watson
 */
 
-#include "SPI.h"
-#include "Arduino.h"
-#include "mscFS.h"
-#include "SD.h"
+#include <UsbMscFat.h>
+#include <SPI.h>
+#include <SD.h>
 
 // Setup USBHost_t36 and as many HUB ports as needed.
 USBHost myusb;
