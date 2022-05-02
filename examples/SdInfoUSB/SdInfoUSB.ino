@@ -77,13 +77,6 @@ void dmpVol() {
   cout << F("fatStartSector:    ") << msc1.fatStartSector() << endl;
   cout << F("dataStartSector:   ") << msc1.dataStartSector() << endl;
 }
-//------------------------------------------------------------------------------
-void printCardType() {
-
-  if(msc1.usbDrive()->usbType() == SD_CARD_TYPE_USB)
-    cout << F("\nDrive type: USB Drive.");
- }
-
 //-----------------------------------------------------------------------------
 void setup() {
   Serial.begin(9600);
@@ -115,7 +108,6 @@ void loop() {
   }
   t = millis() - t;
   cout << F("init time: ") << t << " ms" << endl;
-  printCardType();
   if (!mbrDmp()) {
     return;
   }

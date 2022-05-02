@@ -35,6 +35,9 @@
 #include <USBHost_t36.h>
 #include "mscSenseKeyList.h"
 
+#ifndef UsbMscFat_h
+#define UsbMscFat_h
+
 #ifndef USBmscInfo_h
 #define USBmscInfo_h
 
@@ -43,7 +46,6 @@ const char *decodeAscAscq(uint8_t asc, uint8_t ascq);
 
 void printMscAscError(print_t* pr, msController *pDrive);
 
-const uint8_t SD_CARD_TYPE_USB = 4;
 //-----------------------------------------------------------------------------
 
 inline uint32_t USBmscCapacity(msController *pDrv) {
@@ -76,10 +78,6 @@ class USBmscInterface : public FsBlockDeviceInterface {
    * \return true for success or false for failure.
    */
   virtual bool readUSBDriveInfo(msDriveInfo_t * driveInfo) = 0;
-  /** Return the USB Drive type: USB MSC
-   * \return 4 - USB MSC.
-   */
-  virtual uint8_t usbType() const = 0;
   /**
    * Determine the size of a USB Mass Storage Device.
    *
@@ -143,10 +141,6 @@ class USBMSCDevice : public USBmscInterface {
    * \return true for success or false for failure.
    */
   bool readUSBDriveInfo(msDriveInfo_t * driveInfo);
-  /** Return the card type: SD V1, SD V2 or SDHC
-   * \return 0 - SD V1, 1 - SD V2, or 3 - SDHC.
-   */
-  uint8_t usbType() const;
   /**
    * Read a 512 byte sector from an USB MSC drive.
    *
@@ -688,36 +682,6 @@ extern MSCClass MSC;
 // do not expose these defines in Arduino sketches or other libraries
 #undef MSC_MAX_FILENAME_LEN
 
-#define SD_CARD_TYPE_USB 4
-
-class MSC2Drive
-{
-public:
-	bool init(msController *pDrive) {
-		return MSC.begin(pDrive);
-	}
-	uint8_t usbType() {
-		return MSC.mscfs.usbDrive()->usbType();
-	}
-};
-
-class MSCVolume
-{
-public:
-	bool init(MSC2Drive &usbDrive) {
-		return MSC.mscfs.vol() != nullptr;
-	}
-	uint8_t fatType() {
-		return MSC.mscfs.vol()->fatType();
-	}
-	uint32_t blocksPerCluster() {
-		return MSC.mscfs.vol()->sectorsPerCluster();
-	}
-	uint32_t clusterCount() {
-		return MSC.mscfs.vol()->clusterCount();
-	}
-};
-
-
+#endif // UsbMscFat_h
 
 
