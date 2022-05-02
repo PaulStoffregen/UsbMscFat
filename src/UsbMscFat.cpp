@@ -32,53 +32,6 @@
 MSCClass MSC;
 
 
-bool USBMSCDevice::isBusyRead() {
-	return thisDrive->mscTransferComplete;
-}
-
-bool USBMSCDevice::isBusyWrite() {
-	return thisDrive->mscTransferComplete;
-}
-
-//------------------------------------------------------------------------------
-uint8_t USBMSCDevice::errorCode() const {
-  return m_errorCode;
-}
-//------------------------------------------------------------------------------
-uint32_t USBMSCDevice::errorData() const {
-  return 0;
-}
-//------------------------------------------------------------------------------
-uint32_t USBMSCDevice::errorLine() const {
-  return m_errorLine;
-}
-
-//------------------------------------------------------------------------------
-bool USBMSCDevice::isBusy() {
-  return !m_initDone && !thisDrive->mscTransferComplete;
-}
-
-//------------------------------------------------------------------------------
-bool USBMSCDevice::readUSBDriveInfo(msDriveInfo_t * driveInfo) {
-	memcpy(driveInfo, &thisDrive->msDriveInfo, sizeof(msDriveInfo_t));
-  return true;
-}
-
-//------------------------------------------------------------------------------
-bool USBMSCDevice::syncDevice() {
-  return true;
-}
-
-//------------------------------------------------------------------------------
-uint32_t USBMSCDevice::status() {
-  return m_errorCode;
-}
-
-//------------------------------------------------------------------------------
-uint32_t USBMSCDevice::sectorCount() {
-  return thisDrive->msDriveInfo.capacity.Blocks;
-}
-
 //==============================================================================
 // Start of USBMSCDevice member functions.
 //==============================================================================

@@ -56,95 +56,45 @@ inline uint32_t USBmscCapacity(msController *pDrv) {
 class USBMSCDevice : public FsBlockDeviceInterface {
  public:
   constexpr USBMSCDevice() {}
-  /** Initialize the USB MSC device.
-   * \param[in] Pointer to an instance of msc.
-   * \return true for success or false for failure.
-   */
+  // Initialize the USB MSC device.
   bool begin(msController *pDrive);
-  uint32_t sectorCount();
-  /**
-   * \return code for the last error. See USBmscInfo.h for a list of error codes.
-   */
-  uint8_t errorCode() const;
-  /** \return error data for last error. */
-  uint32_t errorData() const;
-  /** \return error line for last error. Tmp function for debug. */
-  uint32_t errorLine() const;
-  /**
-   * Check for busy with CMD13.
-   *
-   * \return true if busy else false.
-   */
-  bool isBusy();
-  /** Check for busy with MSC read operation
-   *
-   * \return true if busy else false.
-   */
-  bool isBusyRead();
-  /** Check for busy with MSC read operation
-   *
-   * \return true if busy else false.
-   */
-  bool isBusyWrite();
-  /**
-   * Read a USB drive's information. This contains the drive's identification
-   * information such as Manufacturer ID, Product name, Product serial
-   * number and Manufacturing date pluse more.
-   *
-   * \param[out]  msDriveInfo_t pointer to area for returned data.
-   *
-   * \return true for success or false for failure.
-   */
-  bool readUSBDriveInfo(msDriveInfo_t * driveInfo);
-  /**
-   * Read a 512 byte sector from an USB MSC drive.
-   *
-   * \param[in] sector Logical sector to be read.
-   * \param[out] dst Pointer to the location that will receive the data.
-   * \return true for success or false for failure.
-   */
+  // return the number of 512 byte sectors for the whole drive
+  uint32_t sectorCount() { return thisDrive->msDriveInfo.capacity.Blocks; }
+  // return code for the last error.  (where is list of errors?)
+  uint8_t errorCode() const { return m_errorCode; }
+  // return error data for last error.
+  uint32_t errorData() const { return 0; }
+  // return error line for last error. Tmp function for debug.
+  uint32_t errorLine() const { return m_errorLine; }
+  // Check for busy
+  bool isBusy() { return !m_initDone && !thisDrive->mscTransferComplete; }
+  // Check for busy with MSC read operation
+  bool isBusyRead() { return thisDrive->mscTransferComplete; }
+  // Check for busy with MSC read operation
+  bool isBusyWrite() { return thisDrive->mscTransferComplete; }
+  // Read a USB drive's information. This contains the drive's identification
+  // information such as Manufacturer ID, Product name, Product serial
+  // number and Manufacturing date pluse more.
+  bool readUSBDriveInfo(msDriveInfo_t * driveInfo) {
+    memcpy(driveInfo, &thisDrive->msDriveInfo, sizeof(msDriveInfo_t));
+    return true;
+  }
+  // Read a 512 byte sector from an USB MSC drive.
   bool readSector(uint32_t sector, uint8_t* dst);
-  /**
-   * Read multiple 512 byte sectors from an USB MSC drive.
-   *
-   * \param[in] sector Logical sector to be read.
-   * \param[in] ns Number of sectors to be read.
-   * \param[out] dst Pointer to the location that will receive the data.
-   * \return true for success or false for failure.
-   */
-  bool readSectors(uint32_t sector, uint8_t* dst, size_t ns);
-  /** \return USB MSC drive status. */
-  uint32_t status();
-  /** \return success if sync successful. Not for user apps. */
-  bool syncDevice();
-  /**
-   * Writes a 512 byte sector to an USB MSC drive.
-   *
-   * \param[in] sector Logical sector to be written.
-   * \param[in] src Pointer to the location of the data to be written.
-   * \return true for success or false for failure.
-   */
+  // Read multiple 512 byte sectors from an USB MSC drive.
+  bool readSectors(uint32_t sector, uint8_t* dst, size_t numsectors);
+  // return USB MSC drive status.
+  uint32_t status() { return m_errorCode; }
+  // return success if sync successful. Not for user apps.
+  bool syncDevice() { return true; }
+  // Writes a 512 byte sector to an USB MSC drive.
   bool writeSector(uint32_t sector, const uint8_t* src);
-  /**
-   * Write multiple 512 byte sectors to an USB MSC drive.
-   *
-   * \param[in] sector Logical sector to be written.
-   * \param[in] ns Number of sectors to be written.
-   * \param[in] src Pointer to the location of the data to be written.
-   * \return true for success or false for failure.
-   */
+  // Write multiple 512 byte sectors to an USB MSC drive.
   bool writeSectors(uint32_t sector, const uint8_t* src, size_t ns);
-
-  /**
-   * Read multiple 512 byte sectors from an USB MSC drive, using 
-   * a callback per sector
-   *
-   * \param[in] sector Logical sector to be read.
-   * \param[in] ns Number of sectors to be read.
-   * \param[in] callback function to call for each sector read.
-   * \return true for success or false for failure.
-   */
-  bool readSectorsWithCB(uint32_t sector, size_t ns, void (*callback)(uint32_t, uint8_t *), uint32_t token);
+  // Read multiple 512 byte sectors from an USB MSC drive, using
+  // a callback per sector  TODO: this is not used by FsBlockDeviceInterface
+  bool readSectorsWithCB(uint32_t sector, size_t ns,
+    void (*callback)(uint32_t, uint8_t *), uint32_t token);
 
 private:
   msController *thisDrive = nullptr;
