@@ -228,9 +228,6 @@ class UsbFs : public FsVolume {
     // Serial.println("    After usbDriveBegin");
     return FsVolume::begin(&device, setCwv, part);
   }
-  //----------------------------------------------------------------------------
-  /** \return Pointer to USB MSC object. */
-  USBmscInterface* usbDrive() {return &device;}
   //---------------------------------------------------------------------------
   /** Initialize USB MSC drive.
    *
@@ -413,17 +410,17 @@ class UsbFs : public FsVolume {
 #if 0
   bool format(print_t* pr = nullptr) {
     static_assert(sizeof(m_volMem) >= 512, "m_volMem too small");
-    uint32_t sectorCount = usbDrive()->sectorCount();
+    uint32_t sectorCount = device.sectorCount();
     if (sectorCount == 0) {
       return false;
     }
     end();
     if (sectorCount > 67108864) {
       ExFatFormatter fmt;
-      return fmt.format(usbDrive(), reinterpret_cast<uint8_t*>(m_volMem), pr);
+      return fmt.format(&device, reinterpret_cast<uint8_t*>(m_volMem), pr);
     } else {
       FatFormatter fmt;
-      return fmt.format(usbDrive(), reinterpret_cast<uint8_t*>(m_volMem), pr);
+      return fmt.format(&device, reinterpret_cast<uint8_t*>(m_volMem), pr);
     }
   }
 #endif
