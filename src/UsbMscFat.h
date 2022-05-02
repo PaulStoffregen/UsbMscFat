@@ -198,26 +198,6 @@ private:
 #endif  // USBmscDevice_h
 
 
-#ifndef USBmsc_h
-#define USBmsc_h
-
-/**
- * \class USBmscFactory
- * \brief Setup a USB Mass Storage Device.
- */
-class USBmscFactory {
- public:
-  USBmscInterface* newMSCDevice(msController *pDrive) {
-    m_USBmscDrv.begin(pDrive);
-    return &m_USBmscDrv;
-  }
- private:
-  USBMSCDevice m_USBmscDrv;
-};
-#endif  // USBmsc_h
-
-
-
 
 
 /** MSCFat version */
@@ -246,11 +226,11 @@ class UsbFs : public FsVolume {
     // Serial.printf("UsbBase::mscBegin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
     if (!usbDriveBegin(pDrive)) return false;
     // Serial.println("    After usbDriveBegin");
-    return FsVolume::begin((USBMSCDevice*)m_USBmscDrive, setCwv, part);
+    return FsVolume::begin(&device, setCwv, part);
   }
   //----------------------------------------------------------------------------
   /** \return Pointer to USB MSC object. */
-  USBmscInterface* usbDrive() {return m_USBmscDrive;}
+  USBmscInterface* usbDrive() {return &device;}
   //---------------------------------------------------------------------------
   /** Initialize USB MSC drive.
    *
@@ -258,9 +238,9 @@ class UsbFs : public FsVolume {
    * \return true for success or false for failure.
    */
   bool usbDriveBegin(msController *pDrive) {
-    m_USBmscDrive = m_USBmscFactory.newMSCDevice(pDrive);
+    device.begin(pDrive);
     thisMscDrive = pDrive;
-    return m_USBmscDrive && !m_USBmscDrive->errorCode();
+    return !device.errorCode();
   }
   //----------------------------------------------------------------------------
   /** %Print error info and halt.
@@ -416,18 +396,12 @@ class UsbFs : public FsVolume {
   }
   //----------------------------------------------------------------------------
   /** \return USB drive error code. */
-  uint8_t mscErrorCode() {
-    if (m_USBmscDrive) {
-      return m_USBmscDrive->errorCode();
-    }
-    return SD_CARD_ERROR_INVALID_CARD_CONFIG; //TODO: change this!
-  }
+  uint8_t mscErrorCode() { return device.errorCode(); }
   //----------------------------------------------------------------------------
   /** \return SD card error data. */
-  uint8_t mscErrorData() {return m_USBmscDrive ? m_USBmscDrive->errorData() : 0;}
+  uint8_t mscErrorData() { return device.errorData(); }
   //----------------------------------------------------------------------------
   /** \return pointer to base volume */
-  //Vol* vol() {return reinterpret_cast<Vol*>(this);}
   FsVolume * vol() { return this; }
 
   //----------------------------------------------------------------------------
@@ -435,9 +409,7 @@ class UsbFs : public FsVolume {
    *
    * \return true for success or false for failure.
    */
-  bool volumeBegin() {
-     return FsVolume::begin(m_USBmscDrive);
-  }
+  bool volumeBegin() { return FsVolume::begin(&device); } // is this redundant?
 #if 0
   bool format(print_t* pr = nullptr) {
     static_assert(sizeof(m_volMem) >= 512, "m_volMem too small");
@@ -509,8 +481,7 @@ class UsbFs : public FsVolume {
 #endif  // ENABLE_ARDUINO_SERIAL
   //----------------------------------------------------------------------------
  private:
-  USBmscInterface*  m_USBmscDrive;
-  USBmscFactory m_USBmscFactory;
+  USBMSCDevice device;
   msController *thisMscDrive;
 };
 
