@@ -33,7 +33,6 @@
 #include <Arduino.h>
 #include <SdFat.h>
 #include <USBHost_t36.h>
-#include "mscSenseKeyList.h"
 
 #ifndef UsbMscFat_h
 #define UsbMscFat_h
@@ -175,173 +174,9 @@ class UsbFs : public FsVolume {
     return FsVolume::begin(&device, setCwv, part);
   }
   //---------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] pr Print destination.
-   */
-  void errorHalt(print_t* pr) {
-    if (mscErrorCode()) {
-      pr->print(F("mscError: 0X"));
-      pr->print(mscErrorCode(), HEX);
-      pr->print(F(",0X"));
-      pr->println(mscErrorData(), HEX);
-    } else if (!FsVolume::fatType()) {
-      pr->println(F("Check USB drive format."));
-    }
-    while (1) ; //SysCall::halt();
-  }
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] pr Print destination.
-   * \param[in] msg Message to print.
-   */
-  void errorHalt(print_t* pr, const char* msg) {
-    pr->print(F("error: "));
-    pr->println(msg);
-    errorHalt(pr);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print msg and halt.
-   *
-   * \param[in] pr Print destination.
-   * \param[in] msg Message to print.
-   */
-  void errorHalt(print_t* pr, const __FlashStringHelper* msg) {
-    pr->print(F("error: "));
-    pr->println(msg);
-    errorHalt(pr);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] pr Print destination.
-   */
-  void initErrorHalt(print_t* pr) {
-    initErrorPrint(pr);
-    while (1) ; // SysCall::halt();
-  }
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] pr Print destination.
-   * \param[in] msg Message to print.
-   */
-  void initErrorHalt(print_t* pr, const char* msg) {
-    pr->println(msg);
-    initErrorHalt(pr);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] pr Print destination.
-   * \param[in] msg Message to print.
-   */
-  void initErrorHalt(Print* pr, const __FlashStringHelper* msg) {
-    pr->println(msg);
-    initErrorHalt(pr);
-  }
-  //----------------------------------------------------------------------------
-  /** Print error details after begin() fails.
-   *
-   * \param[in] pr Print destination.
-   */
-  void initErrorPrint(Print* pr) {
-    pr->println(F("begin() failed"));
-    if (mscErrorCode()) {
-      pr->println(F("Do not reformat the USB drive."));
-      if (mscErrorCode() == MS_NO_MEDIA_ERR) {
-        pr->println(F("Is USB drive connected?"));
-      }
-    }
-    errorPrint(pr);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print volume FAT/exFAT type.
-   *
-   * \param[in] pr Print destination.
-   */
-  void printFatType(print_t* pr) {
-    if (FsVolume::fatType() == FAT_TYPE_EXFAT) {
-      pr->print(F("exFAT"));
-    } else {
-      pr->print(F("FAT"));
-      pr->print(FsVolume::fatType());
-    }
-  }
-  //----------------------------------------------------------------------------
-  /** %Print USB drive errorCode and errorData.
-   *
-   * \param[in] pr Print destination.
-   */
-  void errorPrint(print_t* pr) {
-    if (mscErrorCode()) {
-      pr->print(F("mscError: 0X"));
-      pr->println(mscErrorCode(), HEX);
-      // pr->print(F(",0X"));
-      // pr->println(mscErrorData(), HEX);
-    } else if (!FsVolume::fatType()) {
-      pr->println(F("Check USB drive format."));
-    }
-  }
-  //----------------------------------------------------------------------------
-  /** %Print msg, any USB drive error code.
-   *
-   * \param[in] pr Print destination.
-   * \param[in] msg Message to print.
-   */
-  void errorPrint(print_t* pr, char const* msg) {
-    pr->print(F("error: "));
-    pr->println(msg);
-    errorPrint(pr);
-  }
-
-  /** %Print msg, any USB drive error code.
-   *
-   * \param[in] pr Print destination.
-   * \param[in] msg Message to print.
-   */
-  void errorPrint(Print* pr, const __FlashStringHelper* msg) {
-    pr->print(F("error: "));
-    pr->println(msg);
-    errorPrint(pr);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print error info and return.
-   *
-   * \param[in] pr Print destination.
-   */
-  void printMscError(print_t* pr) {
-    if (mscErrorCode()) {
-      if (mscErrorCode() == 0x28) {
-        pr->println(F("No USB drive detected, plugged in?"));
-      }
-      pr->print(F("USB drive error: "));
-      pr->print(F("0x"));
-      pr->print(mscErrorCode(), HEX);
-      pr->print(F(",0x"));
-      pr->print(mscErrorData(), HEX);
-      printMscAscError(pr, device.thisDrive);
-    } else if (!FsVolume::fatType()) {
-      pr->println(F("Check USB drive format."));
-    }
-  }
-  //----------------------------------------------------------------------------
-  /** \return USB drive error code. */
-  uint8_t mscErrorCode() { return device.errorCode(); }
-  //----------------------------------------------------------------------------
-  /** \return SD card error data. */
-  uint8_t mscErrorData() { return device.errorData(); }
-  //----------------------------------------------------------------------------
-  /** \return pointer to base volume */
-  FsVolume * vol() { return this; }
-
-  //----------------------------------------------------------------------------
-  /** Initialize file system after call to cardBegin.
-   *
-   * \return true for success or false for failure.
-   */
+  FsVolume * vol() { return this; } // is this redundant?
   bool volumeBegin() { return FsVolume::begin(&device); } // is this redundant?
+  //---------------------------------------------------------------------------
 #if 0
   bool format(print_t* pr = nullptr) {
     static_assert(sizeof(m_volMem) >= 512, "m_volMem too small");
@@ -359,57 +194,31 @@ class UsbFs : public FsVolume {
     }
   }
 #endif
-
+  // Error Message Printing
+  void errorHalt(print_t* pr);
+  void errorHalt(print_t* pr, const char* msg);
+  void errorHalt(print_t* pr, const __FlashStringHelper* msg);
+  void initErrorHalt(print_t* pr);
+  void initErrorHalt(print_t* pr, const char* msg);
+  void initErrorHalt(Print* pr, const __FlashStringHelper* msg);
+  void initErrorPrint(Print* pr);
+  void printFatType(print_t* pr);
+  void errorPrint(print_t* pr);
+  void errorPrint(print_t* pr, char const* msg);
+  void errorPrint(Print* pr, const __FlashStringHelper* msg);
+  void printMscError(print_t* pr);
+  uint8_t mscErrorCode() { return device.errorCode(); }
+  uint8_t mscErrorData() { return device.errorData(); }
 #if ENABLE_ARDUINO_SERIAL
-  /** Print error details after begin() fails. */
-  void initErrorPrint() {
-    initErrorPrint(&Serial);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print msg to Serial and halt.
-   *
-   * \param[in] msg Message to print.
-   */
-  void errorHalt(const __FlashStringHelper* msg) {
-    errorHalt(&Serial, msg);
-  }
-  //----------------------------------------------------------------------------
-  /** %Print error info to Serial and halt. */
-  void errorHalt() {errorHalt(&Serial);}
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] msg Message to print.
-   */
-  void errorHalt(const char* msg) {errorHalt(&Serial, msg);}
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt. */
-  void initErrorHalt() {initErrorHalt(&Serial);}
-  //----------------------------------------------------------------------------
-  /** %Print msg, any SD error code.
-   *
-   * \param[in] msg Message to print.
-   */
-  void errorPrint(const char* msg) {errorPrint(&Serial, msg);}
-   /** %Print msg, any SD error code.
-   *
-   * \param[in] msg Message to print.
-   */
-  void errorPrint(const __FlashStringHelper* msg) {errorPrint(&Serial, msg);}
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] msg Message to print.
-   */
+  void initErrorPrint() { initErrorPrint(&Serial); }
+  void errorHalt(const __FlashStringHelper* msg) { errorHalt(&Serial, msg); }
+  void errorHalt() { errorHalt(&Serial); }
+  void errorHalt(const char* msg) { errorHalt(&Serial, msg); }
+  void initErrorHalt() { initErrorHalt(&Serial); }
+  void errorPrint(const char* msg) { errorPrint(&Serial, msg); }
+  void errorPrint(const __FlashStringHelper* msg) { errorPrint(&Serial, msg); }
   void initErrorHalt(const char* msg) {initErrorHalt(&Serial, msg);}
-  //----------------------------------------------------------------------------
-  /** %Print error info and halt.
-   *
-   * \param[in] msg Message to print.
-   */
-  void initErrorHalt(const __FlashStringHelper* msg) {
-    initErrorHalt(&Serial, msg);
-  }
+  void initErrorHalt(const __FlashStringHelper* msg) { initErrorHalt(&Serial, msg); }
 #endif  // ENABLE_ARDUINO_SERIAL
   //----------------------------------------------------------------------------
  private:
