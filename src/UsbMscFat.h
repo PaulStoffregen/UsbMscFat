@@ -163,7 +163,12 @@ private:
 //==============================================================================
 
 class UsbFs : public FsVolume {
- public:
+private:
+  // UsbFs are only created as part of MSCClass.  To call SdFat functions,
+  // you can access UsbFs within MSCClass as member "mscfs".
+  UsbFs() {}
+  friend class MSCClass;
+public:
   //----------------------------------------------------------------------------
   /** Initialize USB drive and file system.
    *
@@ -178,8 +183,10 @@ class UsbFs : public FsVolume {
     return FsVolume::begin(&device, setCwv, part);
   }
   //---------------------------------------------------------------------------
+  // TODO: programs using these should be offered a better API for their needs....
   FsVolume * vol() { return this; } // is this redundant?
   bool volumeBegin() { return FsVolume::begin(&device); } // is this redundant?
+  FsBlockDeviceInterface * usbDrive() { return &device; } // used by VolumeName.ino
   //---------------------------------------------------------------------------
 #if 0
   bool format(print_t* pr = nullptr) {
@@ -225,8 +232,8 @@ class UsbFs : public FsVolume {
   void initErrorHalt(const __FlashStringHelper* msg) { initErrorHalt(&Serial, msg); }
 #endif  // ENABLE_ARDUINO_SERIAL
   //----------------------------------------------------------------------------
- private:
-  USBMSCDevice device;
+private:
+  USBMSCDevice device; // to become a pointer when API moves away from begin()
 };
 
 
@@ -388,7 +395,7 @@ public:
 	uint64_t totalSize() {
 		return (uint64_t)mscfs.clusterCount() * (uint64_t)mscfs.bytesPerCluster();
 	}
-public: // allow access, so users can mix MSC & SdFat APIs
+public: // allow access, so users can access SdFat APIs
 	UsbFs mscfs;
 };
 

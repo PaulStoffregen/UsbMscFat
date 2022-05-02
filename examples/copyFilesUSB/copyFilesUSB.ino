@@ -40,8 +40,8 @@ const uint8_t SD_CS_PIN = 10;
 #define SD_CONFIG1 SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SPI_CLOCK1)
 
 // Create USB and SD instances. Two USB drives and two SD cards.
-UsbFs msc1;
-UsbFs msc2;
+MSCClass msc1;
+MSCClass msc2;
 SdFs sdio;
 SdFs spi;
 
@@ -57,13 +57,13 @@ const char *file2Copy = "32MEGfile.dat";
 
 //------------------------------------------------------------------------------
 // Check for a connected USB drive and try to mount if not mounted.
-bool driveAvailable(msController *pDrive,UsbFs *mscVol) {
+bool driveAvailable(msController *pDrive, MSCClass *mscVol) {
   if(pDrive->checkConnectedInitialized()) {
     return false; // No USB Drive connected, give up!
   }
-  if(!mscVol->fatType()) {  // USB drive present try mount it.
-    if (!mscVol->begin(&msDrive1)) {
-      mscVol->initErrorPrint(&Serial); // Could not mount it print reason.
+  if(!mscVol->mscfs.fatType()) {  // USB drive present try mount it.
+    if (!mscVol->begin(pDrive)) {
+      mscVol->mscfs.initErrorPrint(&Serial); // Could not mount it print reason.
       return false;
     }
   }
@@ -154,9 +154,9 @@ int fileCopy(bool srcType, bool destType, bool stats) {
 void listDirectories(void) {
   Serial.printf("-------------------------------------------------\n");
   Serial.printf("\nUSB drive 1 directory listing:\n");
-  msc1.ls("/", LS_R | LS_DATE | LS_SIZE);
+  msc1.mscfs.ls("/", LS_R | LS_DATE | LS_SIZE);
   Serial.printf("\nUSB drive 2 directory listing:\n");
-  msc2.ls("/", LS_R | LS_DATE | LS_SIZE);
+  msc2.mscfs.ls("/", LS_R | LS_DATE | LS_SIZE);
   Serial.printf("\nSDIO card directory listing:\n");
   sdio.ls("/", LS_R | LS_DATE | LS_SIZE);
   Serial.printf("\nExternal SD card directory listing:\n");
@@ -180,7 +180,7 @@ void setup()
   // Initialize USB drive 1
   Serial.print("Initializing USB MSC drive 1...");
   if (!msc1.begin(&msDrive1)) {
-    msc1.initErrorPrint(&Serial);
+    msc1.mscfs.initErrorPrint(&Serial);
   } else {
     Serial.println("USB drive 1 is present.");
   }
@@ -188,7 +188,7 @@ void setup()
   // Initialize USB drive 2
   Serial.print("\nInitializing USB MSC drive 2...");
   if (!msc2.begin(&msDrive2)) {
-    msc2.initErrorPrint(&Serial);
+    msc2.mscfs.initErrorPrint(&Serial);
   } else {
     Serial.println("USB drive 2 is present.");
   }
@@ -249,12 +249,12 @@ void loop(void) {
       }
       Serial.printf("\n1) Copying from USB drive 1 to USB drive 2\n");
       // Attempt to open source file
-      if(!file1.open(&msc1,file2Copy, O_RDONLY)) {
+      if(!file1.open(&msc1.mscfs, file2Copy, O_RDONLY)) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
       // Attempt to create destination file
-      if(!file2.open(&msc2,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file2.open(&msc2.mscfs, file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -274,11 +274,11 @@ void loop(void) {
         break;
       }
       Serial.printf("\n2) Copying from USB drive 2 to USB drive 1\n");
-      if(!file1.open(&msc2,file2Copy, O_RDONLY)) {
+      if(!file1.open(&msc2.mscfs, file2Copy, O_RDONLY)) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file2.open(&msc1,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file2.open(&msc1.mscfs, file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -298,11 +298,11 @@ void loop(void) {
         break;
       }
       Serial.printf("\n3) Copying from USB drive 1 to SDIO card\n");
-      if(!file1.open(&msc1,file2Copy, O_RDONLY)) {
+      if(!file1.open(&msc1.mscfs, file2Copy, O_RDONLY)) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file4.open(&sdio,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file4.open(&sdio, file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -322,11 +322,11 @@ void loop(void) {
         break;
       }
       Serial.printf("\n4) Copying from USB drive 2 to SDIO card\n");
-      if(!file1.open(&msc2,file2Copy, O_RDONLY)) {
+      if(!file1.open(&msc2.mscfs, file2Copy, O_RDONLY)) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file4.open(&sdio,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file4.open(&sdio, file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -345,7 +345,7 @@ void loop(void) {
         break;
       }
       Serial.printf("\n5) Copying from USB drive 1 to External SD card\n");
-      if(!file1.open(&msc1,file2Copy, O_RDONLY)) {
+      if(!file1.open(&msc1.mscfs,file2Copy, O_RDONLY)) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
@@ -368,7 +368,7 @@ void loop(void) {
         break;
       }
       Serial.printf("\n6) Copying from USB drive 2 to External SD card\n");
-      if(!file1.open(&msc2,file2Copy, O_RDONLY)) {
+      if(!file1.open(&msc2.mscfs,file2Copy, O_RDONLY)) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
@@ -441,7 +441,7 @@ void loop(void) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file2.open(&msc1,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file2.open(&msc1.mscfs,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -465,7 +465,7 @@ void loop(void) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file2.open(&msc2,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file2.open(&msc2.mscfs,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -488,7 +488,7 @@ void loop(void) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file2.open(&msc1,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file2.open(&msc1.mscfs,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }
@@ -512,7 +512,7 @@ void loop(void) {
         Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
         break;
       }
-      if(!file2.open(&msc2,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
+      if(!file2.open(&msc2.mscfs,file2Copy, O_WRONLY | O_CREAT | O_TRUNC)) {
         Serial.printf("\nERROR: could not open destination file: %s\n",file2Copy);
         break;
       }

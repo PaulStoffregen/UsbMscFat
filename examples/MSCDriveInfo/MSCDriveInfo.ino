@@ -18,8 +18,8 @@ msController msDrive1(myusb);
 msController msDrive2(myusb);
 
 // set up variables using the mscFS utility library functions:
-UsbFs myDrive1;
-UsbFs myDrive2;
+MSCClass myDrive1;
+MSCClass myDrive2;
 
 uint32_t volumesize;
 
@@ -34,10 +34,11 @@ int showUSBDriveInfo(msController  *drive) {
   Serial.printf(F("        HUB Port: %d\n"),drive->msDriveInfo.hubPort);
   Serial.printf(F("  Device Address: %d\n"),drive->msDriveInfo.deviceAddress);
   Serial.printf(F("Removable Device: "));
-  if(drive->msDriveInfo.inquiry.Removable == 1)
+  if(drive->msDriveInfo.inquiry.Removable == 1) {
     Serial.printf(F("YES\n"));
-  else
+  } else {
     Serial.printf(F("NO\n"));
+  }
   Serial.printf(F("        VendorID: %8.8s\n"),drive->msDriveInfo.inquiry.VendorID);
   Serial.printf(F("       ProductID: %16.16s\n"),drive->msDriveInfo.inquiry.ProductID);
   Serial.printf(F("      RevisionID: %4.4s\n"),drive->msDriveInfo.inquiry.RevisionID);
@@ -61,20 +62,21 @@ void setup()
   Serial.println("\nInitializing USB MSC drive 1...");
   if (!myDrive1.begin(&msDrive1)) {
     Serial.print("initialization failed with code: ");
-    Serial.println(myDrive1.mscErrorCode());
+    Serial.println(myDrive1.mscfs.mscErrorCode());
     return;
   }
   Serial.printf("myDrive1 Info:\n");
   showUSBDriveInfo(&msDrive1);
-  myDrive1.ls(LS_R | LS_DATE | LS_SIZE);
+  myDrive1.mscfs.ls(LS_R | LS_DATE | LS_SIZE);
   // print the type and size of the first FAT-type volume
   Serial.print("\nVolume type is FAT");
-  Serial.println(myDrive1.fatType(), DEC);
+  Serial.println(myDrive1.mscfs.fatType(), DEC);
   // Serial.println();
   Serial.print("Cluster Size (bytes): ");
-  Serial.println(myDrive1.vol()->bytesPerCluster());
-  volumesize = myDrive1.sectorsPerCluster();   // clusters are collections of sectors
-  volumesize *= myDrive1.clusterCount();       // we'll have a lot of clusters
+  //Serial.println(myDrive1.vol()->bytesPerCluster());
+  Serial.println(myDrive1.mscfs.bytesPerCluster());
+  volumesize = myDrive1.mscfs.sectorsPerCluster();   // clusters are collections of sectors
+  volumesize *= myDrive1.mscfs.clusterCount();       // we'll have a lot of clusters
   if (volumesize < 8388608ul) {
     Serial.print("Volume size (bytes): ");
     Serial.println(volumesize * 512);        // USB drive sectors default to 512 bytes
@@ -89,22 +91,23 @@ void setup()
   Serial.println("\nInitializing USB MSC drive 2...");
   if (!myDrive2.begin(&msDrive2)) {
     Serial.print("initialization failed with code: ");
-    Serial.println(myDrive2.mscErrorCode());
+    Serial.println(myDrive2.mscfs.mscErrorCode());
     return;
   }
   Serial.printf("myDrive2 Info:\n");
   showUSBDriveInfo(&msDrive2);
-  myDrive2.ls(LS_R | LS_DATE | LS_SIZE);
+  myDrive2.mscfs.ls(LS_R | LS_DATE | LS_SIZE);
 
   // print the type and size of the first FAT-type volume
   volumesize = 0;
   Serial.print("\nVolume type is FAT");
-  Serial.println(myDrive2.fatType(), DEC);
+  Serial.println(myDrive2.mscfs.fatType(), DEC);
   // Serial.println();
   Serial.print("Cluster Size (bytes): ");
-  Serial.println(myDrive2.vol()->bytesPerCluster());
-  volumesize = myDrive2.sectorsPerCluster();   // clusters are collections of sectors
-  volumesize *= myDrive2.clusterCount();       // we'll have a lot of clusters
+  //Serial.println(myDrive2.vol()->bytesPerCluster());
+  Serial.println(myDrive2.mscfs.bytesPerCluster());
+  volumesize = myDrive2.mscfs.sectorsPerCluster();   // clusters are collections of sectors
+  volumesize *= myDrive2.mscfs.clusterCount();       // we'll have a lot of clusters
   if (volumesize < 8388608ul) {
     Serial.print("Volume size (bytes): ");
     Serial.println(volumesize * 512);        // USB drive sectors default to 512 bytes

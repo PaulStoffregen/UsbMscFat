@@ -28,8 +28,8 @@ msController msDrive2(myusb);
 #define SD_CONFIG SdioConfig(FIFO_SDIO)
 
 // set up variables using the mscFS utility library functions:
-UsbFs msc1;
-UsbFs msc2;
+MSCClass msc1;
+MSCClass msc2;
 
 SdFs sd;
 
@@ -205,13 +205,13 @@ void dump_hexbytes(const void *ptr, int len)
 }
 
 // Function to handle one MS Drive...
-void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
+void procesMSDrive(uint8_t drive_number, msController &msDrive, MSCClass &msc)
 {
   Serial.printf("Initialize USB drive...");
   cmsReport = 0;
   if (!msc.begin(&msDrive)) {
     Serial.println("");
-    msc.errorPrint(&Serial);
+    msc.mscfs.errorPrint(&Serial);
     Serial.printf("initialization drive %u failed.\n", drive_number);
   } else {
     Serial.printf("USB drive %u is present.\n", drive_number);
@@ -219,14 +219,14 @@ void procesMSDrive(uint8_t drive_number, msController &msDrive, UsbFs &msc)
   cmsReport = -1;
 
   //  mbrDmp( &msc );
-  mbrDmp( msc.usbDrive() );
+  mbrDmp( msc.mscfs.usbDrive() );
 
   bool partition_valid[4];
   FsVolume partVol[4];
   char volName[32];
 
   for (uint8_t i = 0; i < 4; i++) {
-    partition_valid[i] = partVol[i].begin((USBMSCDevice*)msc.usbDrive(), true, i+1);
+    partition_valid[i] = partVol[i].begin(msc.mscfs.usbDrive(), true, i+1);
     Serial.printf("Partition %u valid:%u\n", i, partition_valid[i]);
   }
   for (uint8_t i = 0; i < 4; i++) {
@@ -359,8 +359,8 @@ void loop(void) {
   if ((chPartition >= '1') && (chPartition <= '5')) {
     uint8_t part = chPartition - '0';
     switch (chDrive) {
-      case '1': SetVolumeLabel(msc1.usbDrive(), part, new_volume_name); break;
-      case '2': SetVolumeLabel(msc2.usbDrive(), part, new_volume_name); break;
+      case '1': SetVolumeLabel(msc1.mscfs.usbDrive(), part, new_volume_name); break;
+      case '2': SetVolumeLabel(msc2.mscfs.usbDrive(), part, new_volume_name); break;
       case 's': SetVolumeLabel(sd.card(), part, new_volume_name); break;
     }
   }

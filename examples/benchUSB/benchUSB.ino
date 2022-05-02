@@ -48,7 +48,7 @@ const uint32_t FILE_SIZE = 1024000UL*FILE_SIZE_MB;
 uint32_t buf32[(BUF_SIZE + 3)/4];
 uint8_t* buf = (uint8_t*)buf32;
 
-UsbFs msc1;
+MSCClass msc1;
 FsFile file;
 
 // Serial output stream
@@ -95,16 +95,16 @@ void loop() {
 #endif  // HAS_UNUSED_STACK
 
   if (!msc1.begin(&msDrive1)) {
-    msc1.initErrorHalt(&Serial);
+    msc1.mscfs.initErrorHalt(&Serial);
   }
 
-  if (msc1.fatType() == FAT_TYPE_EXFAT) {
+  if (msc1.mscfs.fatType() == FAT_TYPE_EXFAT) {
     cout << F("Type is exFAT") << endl;
   } else {
-    cout << F("Type is FAT") << int(msc1.fatType()) << endl;
+    cout << F("Type is FAT") << int(msc1.mscfs.fatType()) << endl;
   }
 
-  cout << F("Card size: ") << msc1.usbDrive()->sectorCount()*512E-9;
+  cout << F("Card size: ") << msc1.mscfs.usbDrive()->sectorCount()*512E-9;
   cout << F(" GB (GB = 1E9 bytes)") << endl;
 
   // open or create file - truncate existing file.
