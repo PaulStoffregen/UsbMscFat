@@ -213,33 +213,15 @@ class UsbFs : public FsVolume {
    * \param[in] msController drive.
    * \return true for success or false for failure.
    */
-  bool begin(msController *pdrv, bool setCwv = true, uint8_t part = 1) {
-	return mscBegin(pdrv, setCwv, part);
-  }
-  //----------------------------------------------------------------------------
-  /** Initialize USB drive and file system for USB Drive.
-   *
-   * \param[in] msController drive configuration.
-   * \return true for success or false for failure.
-   */
-  bool mscBegin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
-    // Serial.printf("UsbBase::mscBegin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
-    if (!usbDriveBegin(pDrive)) return false;
+  bool begin(msController *pDrive, bool setCwv = true, uint8_t part = 1) {
+    // Serial.printf("UsbFs::begin called %x %x %d\n", (uint32_t)pDrive, setCwv, part);
+    device.begin(pDrive);
+    thisMscDrive = pDrive;
+    if (device.errorCode() != 0) return false;
     // Serial.println("    After usbDriveBegin");
     return FsVolume::begin(&device, setCwv, part);
   }
   //---------------------------------------------------------------------------
-  /** Initialize USB MSC drive.
-   *
-   * \param[in] Pointer to an instance of msc.
-   * \return true for success or false for failure.
-   */
-  bool usbDriveBegin(msController *pDrive) {
-    device.begin(pDrive);
-    thisMscDrive = pDrive;
-    return !device.errorCode();
-  }
-  //----------------------------------------------------------------------------
   /** %Print error info and halt.
    *
    * \param[in] pr Print destination.
